@@ -8,13 +8,6 @@ public sealed class DateOrganizer
     private readonly FileTreeScanner _scanner = new();
     private readonly string _logPath;
 
-    private static readonly string[] MonthNames =
-    [
-        "01-Enero", "02-Febrero", "03-Marzo", "04-Abril",
-        "05-Mayo", "06-Junio", "07-Julio", "08-Agosto",
-        "09-Septiembre", "10-Octubre", "11-Noviembre", "12-Diciembre"
-    ];
-
     public string LogPath => _logPath;
 
     public DateOrganizer(string? logPath = null)
@@ -61,10 +54,7 @@ public sealed class DateOrganizer
                 var creationDate = File.GetCreationTime(sourceFile);
                 var modifiedDate = File.GetLastWriteTime(sourceFile);
                 var date = creationDate <= modifiedDate ? creationDate : modifiedDate;
-                var targetDirectory = Path.Combine(
-                    destinationPath,
-                    date.Year.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    MonthNames[date.Month - 1]);
+                var targetDirectory = DateOrganizationPath.GetMonthDirectory(destinationPath, date);
                 var targetFile = Path.Combine(targetDirectory, fileName);
 
                 if (PathsEqual(sourceFile, targetFile) ||

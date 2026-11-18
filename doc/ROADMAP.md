@@ -51,7 +51,16 @@ Verificación: compilación Release y 15 pruebas superadas.
 
 Verificación: compilación Release y 19 pruebas superadas.
 
-### 6. Validación y distribución
+### 6. Unificación de la organización multimedia — completado
+- Sustituye las opciones separadas de organizar por fecha y copiar multimedia por una única operación.
+- Usa un origen común; permite seleccionar imágenes, vídeos o ambos, con un destino por tipo que puede coincidir.
+- Mueve los tipos seleccionados a carpetas `Año/NN-Mes`; los archivos no multimedia permanecen en origen.
+- Renombra colisiones sin sobrescribir. Entre volúmenes o ante un movimiento directo fallido, verifica por SHA-256 la copia antes de borrar el origen.
+- Mantiene progreso, confirmación, registro de actividad y resumen por tipo.
+
+Verificación: compilación Release y 26 pruebas superadas.
+
+### 7. Validación y distribución
 - Ejecutar la batería completa de pruebas y una revisión manual de los flujos en Windows.
 - Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
 - Elegir y documentar el formato de entrega (ejecutable portable o instalador) antes de generar la versión final.

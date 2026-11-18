@@ -9,56 +9,40 @@ namespace FileHandler;
 
 public partial class MainWindow : Window
 {
-    private readonly DateOrganizer _organizer = new();
-    private readonly MediaCopyService _mediaCopyService = new();
-    private readonly MediaCleanupService _mediaCleanupService = new();
     private readonly WindowsDuplicateService _windowsDuplicateService = new();
     private readonly SubfolderFileService _subfolderFileService = new();
+    private readonly MediaOrganizerService _mediaOrganizerService = new();
     private MediaScanResult? _mediaScanResult;
-    private MediaCopySummary? _mediaCopySummary;
     private WindowsDuplicateScanResult? _windowsDuplicateScan;
     private SubfolderFileScanResult? _subfolderFileScan;
-    private bool _mediaOperationRunning;
+    private bool _mediaOrganizationRunning;
     private bool _duplicatesOperationRunning;
     private bool _subfolderOperationRunning;
 
     public MainWindow()
     {
         InitializeComponent();
-        LogPathTextBlock.Text = $"Los registros se guardan en: {_organizer.LogPath}";
-        MediaLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaCopyService.LogPath}";
         DuplicatesLogPathTextBlock.Text = $"Los registros se guardan en: {_windowsDuplicateService.LogPath}";
         SubfolderLogPathTextBlock.Text = $"Los registros se guardan en: {_subfolderFileService.LogPath}";
+        MediaOrganizerLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaOrganizerService.LogPath}";
     }
 
-    private void OrganizeByDate_Click(object sender, RoutedEventArgs e)
+    private void OrganizeMedia_Click(object sender, RoutedEventArgs e)
     {
         HomeView.Visibility = Visibility.Collapsed;
-        DateOrganizerView.Visibility = Visibility.Visible;
+        MediaOrganizerView.Visibility = Visibility.Visible;
+        ResetMediaOrganizerView();
     }
 
-    private void BackToHome_Click(object sender, RoutedEventArgs e)
+    private void BackFromMediaOrganizer_Click(object sender, RoutedEventArgs e)
     {
-        HomeView.Visibility = Visibility.Visible;
-        DateOrganizerView.Visibility = Visibility.Collapsed;
-    }
-
-    private void CopyMedia_Click(object sender, RoutedEventArgs e)
-    {
-        HomeView.Visibility = Visibility.Collapsed;
-        MediaCopyView.Visibility = Visibility.Visible;
-        ResetMediaView();
-    }
-
-    private void BackFromMediaCopy_Click(object sender, RoutedEventArgs e)
-    {
-        if (_mediaOperationRunning)
+        if (_mediaOrganizationRunning)
         {
             return;
         }
 
         HomeView.Visibility = Visibility.Visible;
-        MediaCopyView.Visibility = Visibility.Collapsed;
+        MediaOrganizerView.Visibility = Visibility.Collapsed;
     }
 
     private void MoveDuplicates_Click(object sender, RoutedEventArgs e)
@@ -503,25 +487,7 @@ public partial class MainWindow : Window
         UpdateSubfolderControls();
     }
 
-    private void SelectSource_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedPath = SelectFolder("Selecciona la carpeta de origen");
-        if (selectedPath is not null)
-        {
-            SourcePathTextBox.Text = selectedPath;
-        }
-    }
-
-    private void SelectDestination_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedPath = SelectFolder("Selecciona la carpeta de destino");
-        if (selectedPath is not null)
-        {
-            DestinationPathTextBox.Text = selectedPath;
-        }
-    }
-
-    private async void SelectMediaSource_Click(object sender, RoutedEventArgs e)
+    private async void SelectMediaOrganizerSource_Click(object sender, RoutedEventArgs e)
     {
         var selectedPath = SelectFolder("Selecciona la carpeta de origen multimedia");
         if (selectedPath is null)
@@ -529,150 +495,148 @@ public partial class MainWindow : Window
             return;
         }
 
-        MediaSourcePathTextBox.Text = selectedPath;
-        await ScanMediaSourceAsync(selectedPath);
+        MediaOrganizerSourcePathTextBox.Text = selectedPath;
+        await ScanMediaOrganizerSourceAsync(selectedPath);
     }
 
-    private async Task ScanMediaSourceAsync(string source)
+    private async Task ScanMediaOrganizerSourceAsync(string source)
     {
         _mediaScanResult = null;
-        _mediaCopySummary = null;
-        CopyImagesCheckBox.IsChecked = false;
-        CopyVideosCheckBox.IsChecked = false;
-        DeleteImagesCheckBox.IsChecked = false;
-        DeleteVideosCheckBox.IsChecked = false;
-        DeleteMediaSection.Visibility = Visibility.Collapsed;
-        ImageDestinationTextBox.Clear();
-        VideoDestinationTextBox.Clear();
-        MediaCountsTextBlock.Text = string.Empty;
-        MediaSummaryTextBlock.Text = string.Empty;
-        MediaLogTextBox.Clear();
-        MediaProgressBar.Value = 0;
-        MediaProgressBar.IsIndeterminate = true;
-        MediaStatusTextBlock.Text = "Escaneando archivos multimedia...";
-        _mediaOperationRunning = true;
-        SelectMediaSourceButton.IsEnabled = false;
-        MediaBackButton.IsEnabled = false;
-        UpdateMediaCopyControls();
+        OrganizeImagesCheckBox.IsChecked = false;
+        OrganizeVideosCheckBox.IsChecked = false;
+        ImageOrganizationDestinationTextBox.Clear();
+        VideoOrganizationDestinationTextBox.Clear();
+        MediaOrganizerCountsTextBlock.Text = string.Empty;
+        MediaOrganizationSummaryTextBlock.Text = string.Empty;
+        MediaOrganizerLogTextBox.Clear();
+        MediaOrganizerProgressBar.Value = 0;
+        MediaOrganizerProgressBar.IsIndeterminate = true;
+        MediaOrganizerStatusTextBlock.Text = "Escaneando imágenes y vídeos...";
+        _mediaOrganizationRunning = true;
+        SelectMediaOrganizerSourceButton.IsEnabled = false;
+        MediaOrganizerBackButton.IsEnabled = false;
+        UpdateMediaOrganizationControls();
 
-        var progress = new Progress<OperationProgress>(UpdateMediaProgress);
+        var progress = new Progress<OperationProgress>(UpdateMediaOrganizationProgress);
         try
         {
-            _mediaScanResult = await Task.Run(() => _mediaCopyService.Scan(source, progress));
-            MediaCountsTextBlock.Text =
-                $"{_mediaScanResult.ImageFiles.Count} imágenes · " +
-                $"{_mediaScanResult.VideoFiles.Count} vídeos · " +
-                $"{_mediaScanResult.SubdirectoryCount} subcarpetas";
-            if (_mediaScanResult.Errors > 0)
+            var scan = await Task.Run(() => _mediaOrganizerService.Scan(source, progress));
+            _mediaScanResult = scan;
+            MediaOrganizerCountsTextBlock.Text =
+                $"{scan.ImageFiles.Count} imágenes · {scan.VideoFiles.Count} vídeos · " +
+                $"{scan.SubdirectoryCount} subcarpetas";
+            if (scan.Errors > 0)
             {
-                MediaCountsTextBlock.Text += $" · {_mediaScanResult.Errors} errores de escaneo";
+                MediaOrganizerCountsTextBlock.Text += $" · {scan.Errors} errores de escaneo";
+            }
+
+            if (scan.ImageFiles.Count == 0 && scan.VideoFiles.Count == 0)
+            {
+                MediaOrganizationSummaryTextBlock.Text = "No se encontraron imágenes ni vídeos compatibles.";
             }
         }
         catch (ArgumentException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (DirectoryNotFoundException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (IOException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (UnauthorizedAccessException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (SecurityException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         finally
         {
-            _mediaOperationRunning = false;
-            SelectMediaSourceButton.IsEnabled = true;
-            MediaBackButton.IsEnabled = true;
-            UpdateMediaCopyControls();
+            _mediaOrganizationRunning = false;
+            SelectMediaOrganizerSourceButton.IsEnabled = true;
+            MediaOrganizerBackButton.IsEnabled = true;
+            UpdateMediaOrganizationControls();
         }
     }
 
-    private void SelectImageDestination_Click(object sender, RoutedEventArgs e)
+    private void SelectImageOrganizationDestination_Click(object sender, RoutedEventArgs e)
     {
         var selectedPath = SelectFolder("Selecciona el destino de las imágenes");
         if (selectedPath is not null)
         {
-            ImageDestinationTextBox.Text = selectedPath;
-            UpdateMediaCopyControls();
+            ImageOrganizationDestinationTextBox.Text = selectedPath;
+            UpdateMediaOrganizationControls();
         }
     }
 
-    private void SelectVideoDestination_Click(object sender, RoutedEventArgs e)
+    private void SelectVideoOrganizationDestination_Click(object sender, RoutedEventArgs e)
     {
         var selectedPath = SelectFolder("Selecciona el destino de los vídeos");
         if (selectedPath is not null)
         {
-            VideoDestinationTextBox.Text = selectedPath;
-            UpdateMediaCopyControls();
+            VideoOrganizationDestinationTextBox.Text = selectedPath;
+            UpdateMediaOrganizationControls();
         }
     }
 
-    private void MediaTypeSelection_Changed(object sender, RoutedEventArgs e)
+    private void MediaOrganizationSelection_Changed(object sender, RoutedEventArgs e)
     {
-        UpdateMediaCopyControls();
+        UpdateMediaOrganizationControls();
     }
 
-    private void UpdateMediaCopyControls()
+    private void UpdateMediaOrganizationControls()
     {
-        var hasScan = _mediaScanResult is not null && !_mediaOperationRunning;
-        CopyImagesCheckBox.IsEnabled = hasScan && _mediaScanResult!.ImageFiles.Count > 0;
-        CopyVideosCheckBox.IsEnabled = hasScan && _mediaScanResult!.VideoFiles.Count > 0;
+        var hasScan = !_mediaOrganizationRunning && _mediaScanResult is not null;
+        OrganizeImagesCheckBox.IsEnabled = hasScan && _mediaScanResult!.ImageFiles.Count > 0;
+        OrganizeVideosCheckBox.IsEnabled = hasScan && _mediaScanResult!.VideoFiles.Count > 0;
 
-        var copyImages = hasScan && CopyImagesCheckBox.IsChecked == true;
-        var copyVideos = hasScan && CopyVideosCheckBox.IsChecked == true;
-        SelectImageDestinationButton.IsEnabled = copyImages;
-        ImageDestinationTextBox.IsEnabled = copyImages;
-        SelectVideoDestinationButton.IsEnabled = copyVideos;
-        VideoDestinationTextBox.IsEnabled = copyVideos;
-        CopyMediaButton.IsEnabled = hasScan &&
-            ((copyImages && ImageDestinationTextBox.Text.Length > 0) ||
-             (copyVideos && VideoDestinationTextBox.Text.Length > 0));
+        var organizeImages = hasScan && OrganizeImagesCheckBox.IsChecked == true;
+        var organizeVideos = hasScan && OrganizeVideosCheckBox.IsChecked == true;
+        SelectImageOrganizationDestinationButton.IsEnabled = organizeImages;
+        SelectVideoOrganizationDestinationButton.IsEnabled = organizeVideos;
+        ImageOrganizationDestinationTextBox.IsEnabled = organizeImages;
+        VideoOrganizationDestinationTextBox.IsEnabled = organizeVideos;
+        OrganizeMediaButton.IsEnabled = hasScan &&
+            (organizeImages || organizeVideos) &&
+            (!organizeImages || ImageOrganizationDestinationTextBox.Text.Trim().Length > 0) &&
+            (!organizeVideos || VideoOrganizationDestinationTextBox.Text.Trim().Length > 0);
     }
 
-    private async void StartMediaCopy_Click(object sender, RoutedEventArgs e)
+    private async void StartMediaOrganization_Click(object sender, RoutedEventArgs e)
     {
         var scan = _mediaScanResult;
-        var copyImages = CopyImagesCheckBox.IsChecked == true;
-        var copyVideos = CopyVideosCheckBox.IsChecked == true;
-        var imageDestination = ImageDestinationTextBox.Text.Trim();
-        var videoDestination = VideoDestinationTextBox.Text.Trim();
-        if (scan is null || (!copyImages && !copyVideos))
+        var organizeImages = OrganizeImagesCheckBox.IsChecked == true;
+        var organizeVideos = OrganizeVideosCheckBox.IsChecked == true;
+        var imageDestination = ImageOrganizationDestinationTextBox.Text.Trim();
+        var videoDestination = VideoOrganizationDestinationTextBox.Text.Trim();
+        if (scan is null || (!organizeImages && !organizeVideos))
         {
-            MessageBox.Show(
-                this,
-                "Selecciona al menos un tipo de archivo para copiar.",
-                "No hay archivos seleccionados",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
             return;
         }
 
         var selectedItems = new List<string>();
-        if (copyImages)
+        if (organizeImages)
         {
             selectedItems.Add($"{scan.ImageFiles.Count} imágenes → {imageDestination}");
         }
-        if (copyVideos)
+        if (organizeVideos)
         {
             selectedItems.Add($"{scan.VideoFiles.Count} vídeos → {videoDestination}");
         }
 
         var confirmation = MessageBox.Show(
             this,
-            $"Se copiarán los siguientes archivos; el origen se conservará:{Environment.NewLine}{Environment.NewLine}" +
+            $"Se moverán estos archivos a carpetas Año/Mes:{Environment.NewLine}{Environment.NewLine}" +
             string.Join(Environment.NewLine, selectedItems) +
-            $"{Environment.NewLine}{Environment.NewLine}Las colisiones se resolverán con sufijos; no se sobrescribirá ningún archivo.",
-            "Confirmar copia",
+            $"{Environment.NewLine}{Environment.NewLine}Los nombres en conflicto recibirán un sufijo incremental. " +
+            "Si el movimiento entre volúmenes no es posible, se copiará y verificará por SHA-256 antes de borrar el origen. " +
+            "¿Quieres continuar?",
+            "Confirmar organización multimedia",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (confirmation != MessageBoxResult.Yes)
@@ -680,338 +644,108 @@ public partial class MainWindow : Window
             return;
         }
 
-        _mediaCopySummary = null;
-        DeleteImagesCheckBox.IsChecked = false;
-        DeleteVideosCheckBox.IsChecked = false;
-        DeleteMediaSection.Visibility = Visibility.Collapsed;
-        _mediaOperationRunning = true;
-        CopyMediaButton.IsEnabled = false;
-        SelectMediaSourceButton.IsEnabled = false;
-        MediaBackButton.IsEnabled = false;
-        UpdateMediaCopyControls();
-        MediaProgressBar.Value = 0;
-        MediaProgressBar.IsIndeterminate = false;
-        MediaSummaryTextBlock.Text = string.Empty;
-        var progress = new Progress<OperationProgress>(UpdateMediaProgress);
+        _mediaOrganizationRunning = true;
+        MediaOrganizerProgressBar.Value = 0;
+        MediaOrganizerProgressBar.IsIndeterminate = false;
+        MediaOrganizationSummaryTextBlock.Text = string.Empty;
+        MediaOrganizerBackButton.IsEnabled = false;
+        SelectMediaOrganizerSourceButton.IsEnabled = false;
+        UpdateMediaOrganizationControls();
+        var progress = new Progress<OperationProgress>(UpdateMediaOrganizationProgress);
         try
         {
-            var summary = await Task.Run(() => _mediaCopyService.Copy(
+            var summary = await Task.Run(() => _mediaOrganizerService.Organize(
                 scan,
-                copyImages,
+                organizeImages,
                 imageDestination,
-                copyVideos,
+                organizeVideos,
                 videoDestination,
                 progress));
-            MediaSummaryTextBlock.Text =
-                $"Copiados: {summary.ImagesCopied}/{summary.ImagesToCopy} imágenes · " +
-                $"{summary.VideosCopied}/{summary.VideosToCopy} vídeos · " +
-                $"{summary.CopyErrors} errores";
-            if (summary.ScanErrors > 0)
-            {
-                MediaSummaryTextBlock.Text += $" · {summary.ScanErrors} errores de escaneo";
-            }
-            _mediaCopySummary = summary;
-            DeleteImagesCheckBox.Content = $"Eliminar originales de imágenes ({summary.ImagesCopied})";
-            DeleteVideosCheckBox.Content = $"Eliminar originales de vídeos ({summary.VideosCopied})";
-            DeleteImagesCheckBox.IsChecked = false;
-            DeleteVideosCheckBox.IsChecked = false;
-            DeleteMediaSection.Visibility = summary.SuccessfulCopies.Count > 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            MediaOrganizationSummaryTextBlock.Text =
+                $"Movidos: {summary.ImagesMoved}/{summary.ImagesToOrganize} imágenes · " +
+                $"{summary.VideosMoved}/{summary.VideosToOrganize} vídeos · " +
+                $"Renombrados por colisión: {summary.CollisionRenames} · Ya organizados: " +
+                $"{summary.AlreadyOrganized} · Errores de escaneo/movimiento: " +
+                $"{summary.ScanErrors}/{summary.Errors}.";
+            _mediaScanResult = null;
         }
         catch (ArgumentException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (DirectoryNotFoundException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (IOException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (UnauthorizedAccessException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (InvalidOperationException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         catch (SecurityException exception)
         {
-            ShowMediaOperationError(exception.Message);
+            ShowMediaOrganizationError(exception.Message);
         }
         finally
         {
-            _mediaOperationRunning = false;
-            SelectMediaSourceButton.IsEnabled = true;
-            MediaBackButton.IsEnabled = true;
-            UpdateMediaCopyControls();
-            UpdateMediaDeleteControls();
+            _mediaOrganizationRunning = false;
+            MediaOrganizerBackButton.IsEnabled = true;
+            SelectMediaOrganizerSourceButton.IsEnabled = true;
+            UpdateMediaOrganizationControls();
         }
     }
 
-    private void MediaDeleteSelection_Changed(object sender, RoutedEventArgs e)
+    private void UpdateMediaOrganizationProgress(OperationProgress update)
     {
-        UpdateMediaDeleteControls();
-    }
-
-    private void UpdateMediaDeleteControls()
-    {
-        var summary = _mediaCopySummary;
-        var canDelete = summary is not null && !_mediaOperationRunning;
-        var imageCopies = summary?.SuccessfulCopies.Count(copy => copy.IsImage) ?? 0;
-        var videoCopies = summary?.SuccessfulCopies.Count(copy => !copy.IsImage) ?? 0;
-
-        DeleteImagesCheckBox.IsEnabled = canDelete && imageCopies > 0;
-        DeleteVideosCheckBox.IsEnabled = canDelete && videoCopies > 0;
-        DeleteMediaButton.IsEnabled = canDelete &&
-            (DeleteImagesCheckBox.IsChecked == true || DeleteVideosCheckBox.IsChecked == true);
-    }
-
-    private async void DeleteCopiedMedia_Click(object sender, RoutedEventArgs e)
-    {
-        var scan = _mediaScanResult;
-        var copySummary = _mediaCopySummary;
-        var deleteImages = DeleteImagesCheckBox.IsChecked == true;
-        var deleteVideos = DeleteVideosCheckBox.IsChecked == true;
-        if (scan is null || copySummary is null || (!deleteImages && !deleteVideos))
-        {
-            MessageBox.Show(
-                this,
-                "Selecciona al menos un tipo de original para eliminar.",
-                "No hay archivos seleccionados",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-            return;
-        }
-
-        var removeEmptyDirectories =
-            MediaCleanupService.ShouldRemoveEmptyDirectories(scan, deleteImages, deleteVideos);
-        var selectedItems = new List<string>();
-        if (deleteImages)
-        {
-            selectedItems.Add($"{copySummary.SuccessfulCopies.Count(copy => copy.IsImage)} imágenes");
-        }
-        if (deleteVideos)
-        {
-            selectedItems.Add($"{copySummary.SuccessfulCopies.Count(copy => !copy.IsImage)} vídeos");
-        }
-
-        var confirmationMessage =
-            $"Se intentarán eliminar estos originales:{Environment.NewLine}{string.Join(", ", selectedItems)}." +
-            $"{Environment.NewLine}{Environment.NewLine}Solo se borrarán si siguen coincidiendo por SHA-256 con su copia. " +
-            "Los archivos que no se copiaron o que cambiaron se conservarán.";
-        confirmationMessage += removeEmptyDirectories
-            ? $"{Environment.NewLine}{Environment.NewLine}También se intentarán eliminar las subcarpetas vacías, " +
-              "de abajo arriba. Las carpetas no vacías se conservarán."
-            : $"{Environment.NewLine}{Environment.NewLine}No se eliminarán subcarpetas porque no se han seleccionado " +
-              "todos los tipos multimedia presentes en el origen.";
-
-        var confirmation = MessageBox.Show(
-            this,
-            confirmationMessage,
-            "Confirmar eliminación de originales",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-        if (confirmation != MessageBoxResult.Yes)
-        {
-            return;
-        }
-
-        _mediaOperationRunning = true;
-        SelectMediaSourceButton.IsEnabled = false;
-        MediaBackButton.IsEnabled = false;
-        UpdateMediaCopyControls();
-        UpdateMediaDeleteControls();
-        MediaProgressBar.Value = 0;
-        MediaProgressBar.IsIndeterminate = false;
-        var progress = new Progress<OperationProgress>(UpdateMediaProgress);
-        try
-        {
-            var summary = await Task.Run(() => _mediaCleanupService.DeleteCopiedFiles(
-                scan,
-                copySummary.SuccessfulCopies,
-                deleteImages,
-                deleteVideos,
-                progress));
-            MediaSummaryTextBlock.Text =
-                $"Eliminados: {summary.ImagesDeleted} imágenes · {summary.VideosDeleted} vídeos · " +
-                $"{summary.EmptyDirectoriesDeleted} subcarpetas vacías · " +
-                $"{summary.FilesSkipped} conservados · {summary.Errors} errores.";
-            DeleteMediaSection.Visibility = Visibility.Collapsed;
-        }
-        catch (ArgumentException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        catch (DirectoryNotFoundException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        catch (IOException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        catch (InvalidOperationException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        catch (SecurityException exception)
-        {
-            ShowMediaOperationError(exception.Message);
-        }
-        finally
-        {
-            _mediaOperationRunning = false;
-            SelectMediaSourceButton.IsEnabled = true;
-            MediaBackButton.IsEnabled = true;
-            UpdateMediaCopyControls();
-            UpdateMediaDeleteControls();
-        }
-    }
-
-    private void UpdateMediaProgress(OperationProgress update)
-    {
-        MediaProgressBar.IsIndeterminate = update.IsScanning;
+        MediaOrganizerProgressBar.IsIndeterminate = update.IsScanning;
         if (!update.IsScanning)
         {
-            MediaProgressBar.Value = update.Total == 0
+            MediaOrganizerProgressBar.Value = update.Total == 0
                 ? 100
                 : update.Processed * 100.0 / update.Total;
         }
-        MediaStatusTextBlock.Text = update.Message;
-        MediaLogTextBox.AppendText(update.Message + Environment.NewLine);
-        MediaLogTextBox.ScrollToEnd();
+        MediaOrganizerStatusTextBlock.Text = update.Message;
+        MediaOrganizerLogTextBox.AppendText(update.Message + Environment.NewLine);
+        MediaOrganizerLogTextBox.ScrollToEnd();
     }
 
-    private void ShowMediaOperationError(string message)
+    private void ShowMediaOrganizationError(string message)
     {
-        MediaProgressBar.IsIndeterminate = false;
-        MediaStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
-        MediaLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
-        MessageBox.Show(this, message, "Error en la copia", MessageBoxButton.OK, MessageBoxImage.Error);
+        MediaOrganizerProgressBar.IsIndeterminate = false;
+        MediaOrganizerStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
+        MediaOrganizerLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
+        MessageBox.Show(
+            this,
+            message,
+            "Error al organizar multimedia",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
     }
 
-    private void ResetMediaView()
+    private void ResetMediaOrganizerView()
     {
         _mediaScanResult = null;
-        _mediaCopySummary = null;
-        MediaSourcePathTextBox.Clear();
-        CopyImagesCheckBox.IsChecked = false;
-        CopyVideosCheckBox.IsChecked = false;
-        DeleteImagesCheckBox.IsChecked = false;
-        DeleteVideosCheckBox.IsChecked = false;
-        DeleteMediaSection.Visibility = Visibility.Collapsed;
-        ImageDestinationTextBox.Clear();
-        VideoDestinationTextBox.Clear();
-        MediaProgressBar.Value = 0;
-        MediaProgressBar.IsIndeterminate = false;
-        MediaStatusTextBlock.Text = "Selecciona la carpeta de origen para escanearla.";
-        MediaCountsTextBlock.Text = string.Empty;
-        MediaSummaryTextBlock.Text = string.Empty;
-        MediaLogTextBox.Clear();
-        SelectMediaSourceButton.IsEnabled = true;
-        MediaBackButton.IsEnabled = true;
-        UpdateMediaCopyControls();
-        UpdateMediaDeleteControls();
-    }
-
-    private async void Start_Click(object sender, RoutedEventArgs e)
-    {
-        var source = SourcePathTextBox.Text.Trim();
-        var destination = DestinationPathTextBox.Text.Trim();
-        if (source.Length == 0 || destination.Length == 0)
-        {
-            MessageBox.Show(
-                this,
-                "Selecciona las carpetas de origen y destino.",
-                "Faltan carpetas",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-            return;
-        }
-
-        var confirmation = MessageBox.Show(
-            this,
-            "Esta operación moverá los archivos de origen. Los archivos con un nombre ya existente en el destino se omitirán. ¿Quieres continuar?",
-            "Confirmar organización",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-        if (confirmation != MessageBoxResult.Yes)
-        {
-            return;
-        }
-
-        StartButton.IsEnabled = false;
-        BackButton.IsEnabled = false;
-        SelectSourceButton.IsEnabled = false;
-        SelectDestinationButton.IsEnabled = false;
-        OperationProgressBar.IsIndeterminate = true;
-        OperationProgressBar.Value = 0;
-        SummaryTextBlock.Text = string.Empty;
-        LogTextBox.Clear();
-        StatusTextBlock.Text = "Preparando el recorrido de archivos...";
-
-        var progress = new Progress<OperationProgress>(UpdateProgress);
-        try
-        {
-            var summary = await Task.Run(() => _organizer.Organize(source, destination, progress));
-            SummaryTextBlock.Text =
-                $"Resultado: {summary.Total} encontrados · {summary.Moved} movidos · " +
-                $"{summary.Skipped} omitidos · {summary.Errors} errores.";
-        }
-        catch (ArgumentException exception)
-        {
-            ShowOperationError(exception.Message);
-        }
-        catch (DirectoryNotFoundException exception)
-        {
-            ShowOperationError(exception.Message);
-        }
-        catch (IOException exception)
-        {
-            ShowOperationError(exception.Message);
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            ShowOperationError(exception.Message);
-        }
-        finally
-        {
-            StartButton.IsEnabled = true;
-            BackButton.IsEnabled = true;
-            SelectSourceButton.IsEnabled = true;
-            SelectDestinationButton.IsEnabled = true;
-        }
-    }
-
-    private void UpdateProgress(OperationProgress update)
-    {
-        OperationProgressBar.IsIndeterminate = update.IsScanning;
-        if (!update.IsScanning)
-        {
-            OperationProgressBar.Value = update.Total == 0
-                ? 100
-                : update.Processed * 100.0 / update.Total;
-        }
-        StatusTextBlock.Text = update.Message;
-        LogTextBox.AppendText(update.Message + Environment.NewLine);
-        LogTextBox.ScrollToEnd();
-    }
-
-    private void ShowOperationError(string message)
-    {
-        OperationProgressBar.IsIndeterminate = false;
-        StatusTextBlock.Text = $"La operación no pudo completarse: {message}";
-        LogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
-        MessageBox.Show(this, message, "Error en la operación", MessageBoxButton.OK, MessageBoxImage.Error);
+        MediaOrganizerSourcePathTextBox.Clear();
+        OrganizeImagesCheckBox.IsChecked = false;
+        OrganizeVideosCheckBox.IsChecked = false;
+        ImageOrganizationDestinationTextBox.Clear();
+        VideoOrganizationDestinationTextBox.Clear();
+        MediaOrganizerProgressBar.Value = 0;
+        MediaOrganizerProgressBar.IsIndeterminate = false;
+        MediaOrganizerStatusTextBlock.Text = "Selecciona la carpeta de origen para escanearla.";
+        MediaOrganizerCountsTextBlock.Text = string.Empty;
+        MediaOrganizationSummaryTextBlock.Text = string.Empty;
+        MediaOrganizerLogTextBox.Clear();
+        SelectMediaOrganizerSourceButton.IsEnabled = true;
+        MediaOrganizerBackButton.IsEnabled = true;
+        UpdateMediaOrganizationControls();
     }
 
     private string? SelectFolder(string title)

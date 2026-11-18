@@ -28,7 +28,7 @@
                     <TextBlock Text="Selecciona una operación para configurar sus carpetas y opciones."
                                Margin="0,8,0,22" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
 
-                    <Button Click="OrganizeByDate_Click"
+                    <Button Click="OrganizeMedia_Click"
                             HorizontalContentAlignment="Stretch"
                             Background="White"
                             BorderBrush="#D1D5DB"
@@ -36,22 +36,8 @@
                             Padding="16"
                             Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Text="Organizar por fecha" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
-                            <TextBlock Text="Mover archivos a carpetas por año y mes." Margin="0,5,0,0" Foreground="#4B5563" />
-                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button Click="CopyMedia_Click"
-                            HorizontalContentAlignment="Stretch"
-                            Background="White"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Padding="16"
-                            Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Copiar multimedia" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Text="Clasificar imágenes y vídeos por tipo y elegir destinos." Margin="0,5,0,0" />
+                            <TextBlock Text="Organizar archivos multimedia" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+                            <TextBlock Text="Seleccionar imágenes, vídeos o ambos y organizar por año y mes." Margin="0,5,0,0" Foreground="#4B5563" />
                             <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
                         </StackPanel>
                     </Button>
@@ -84,84 +70,30 @@
                     </Button>
                 </StackPanel>
 
-                <StackPanel x:Name="DateOrganizerView" Visibility="Collapsed">
-                    <Button x:Name="BackButton"
+                <StackPanel x:Name="MediaOrganizerView" Visibility="Collapsed">
+                    <Button x:Name="MediaOrganizerBackButton"
                             Content="← Todas las operaciones"
                             HorizontalAlignment="Left"
-                            Click="BackToHome_Click"
-                            Margin="0,0,0,20" />
-                    <TextBlock Text="Organizar por fecha" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
-                    <TextBlock Text="Mueve los archivos de la carpeta de origen a carpetas por año y mes, utilizando la fecha más antigua entre creación y modificación."
-                               Margin="0,8,0,22" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
-
-                    <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
-                    <DockPanel Margin="0,7,0,18">
-                        <Button x:Name="SelectSourceButton"
-                                DockPanel.Dock="Right"
-                                Content="Seleccionar..."
-                                Click="SelectSource_Click"
-                                Margin="10,0,0,0" />
-                        <TextBox x:Name="SourcePathTextBox" IsReadOnly="True" ToolTip="Selecciona la carpeta que contiene los archivos." />
-                    </DockPanel>
-
-                    <TextBlock Text="Carpeta de destino" FontWeight="SemiBold" Foreground="#374151" />
-                    <DockPanel Margin="0,7,0,22">
-                        <Button x:Name="SelectDestinationButton"
-                                DockPanel.Dock="Right"
-                                Content="Seleccionar..."
-                                Click="SelectDestination_Click"
-                                Margin="10,0,0,0" />
-                        <TextBox x:Name="DestinationPathTextBox" IsReadOnly="True" ToolTip="Selecciona dónde crear las carpetas de año y mes." />
-                    </DockPanel>
-
-                    <Button x:Name="StartButton"
-                            Content="Iniciar organización"
-                            HorizontalAlignment="Left"
-                            Background="#2563EB"
-                            Foreground="White"
-                            Click="Start_Click" />
-                    <ProgressBar x:Name="OperationProgressBar" Height="12" Margin="0,22,0,8" Minimum="0" Maximum="100" />
-                    <TextBlock x:Name="StatusTextBlock" Text="Selecciona las carpetas de origen y destino para comenzar."
-                               Foreground="#374151" TextWrapping="Wrap" />
-                    <TextBlock x:Name="SummaryTextBlock" Margin="0,8,0,18" Foreground="#111827" FontWeight="SemiBold" />
-
-                    <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
-                    <TextBox x:Name="LogTextBox"
-                             Margin="0,8,0,0"
-                             Height="120"
-                             IsReadOnly="True"
-                             AcceptsReturn="True"
-                             TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto"
-                             FontFamily="Consolas"
-                             FontSize="12" />
-                    <TextBlock x:Name="LogPathTextBlock" Margin="0,8,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
-                </StackPanel>
-
-                <StackPanel x:Name="MediaCopyView" Visibility="Collapsed">
-                    <Button x:Name="MediaBackButton"
-                            Content="← Todas las operaciones"
-                            HorizontalAlignment="Left"
-                            Click="BackFromMediaCopy_Click"
+                            Click="BackFromMediaOrganizer_Click"
                             Margin="0,0,0,14" />
-                    <TextBlock Text="Copiar multimedia" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
-                    <TextBlock Text="Escanea la carpeta de origen y elige qué tipos de archivos copiar y a qué destinos."
+                    <TextBlock Text="Organizar archivos multimedia" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
+                    <TextBlock Text="Elige imágenes, vídeos o ambos. Se moverán a carpetas de año y mes usando la fecha más antigua entre creación y modificación."
                                Margin="0,6,0,12" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
 
                     <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
                     <DockPanel Margin="0,5,0,8">
-                        <Button x:Name="SelectMediaSourceButton"
+                        <Button x:Name="SelectMediaOrganizerSourceButton"
                                 DockPanel.Dock="Right"
                                 Content="Seleccionar..."
-                                Click="SelectMediaSource_Click"
+                                Click="SelectMediaOrganizerSource_Click"
                                 Margin="10,0,0,0" />
-                        <TextBox x:Name="MediaSourcePathTextBox" IsReadOnly="True" />
+                        <TextBox x:Name="MediaOrganizerSourcePathTextBox" IsReadOnly="True" />
                     </DockPanel>
 
-                    <ProgressBar x:Name="MediaProgressBar" Height="10" Margin="0,5,0,5" Minimum="0" Maximum="100" />
-                    <TextBlock x:Name="MediaStatusTextBlock" Text="Selecciona la carpeta de origen para escanearla."
+                    <ProgressBar x:Name="MediaOrganizerProgressBar" Height="10" Margin="0,5,0,5" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="MediaOrganizerStatusTextBlock" Text="Selecciona la carpeta de origen para escanearla."
                                Foreground="#374151" TextWrapping="Wrap" />
-                    <TextBlock x:Name="MediaCountsTextBlock" Margin="0,5,0,12" Foreground="#111827" FontWeight="SemiBold" />
+                    <TextBlock x:Name="MediaOrganizerCountsTextBlock" Margin="0,5,0,12" Foreground="#111827" FontWeight="SemiBold" />
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -169,89 +101,54 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <CheckBox x:Name="CopyImagesCheckBox"
-                                      Content="Copiar imágenes"
+                            <CheckBox x:Name="OrganizeImagesCheckBox"
+                                      Content="Organizar imágenes"
                                       IsEnabled="False"
-                                      Checked="MediaTypeSelection_Changed"
-                                      Unchecked="MediaTypeSelection_Changed"
+                                      Checked="MediaOrganizationSelection_Changed"
+                                      Unchecked="MediaOrganizationSelection_Changed"
                                       FontWeight="SemiBold" />
                             <TextBlock Text="Destino de imágenes" Margin="0,8,0,4" Foreground="#374151" />
                             <DockPanel>
-                                <Button x:Name="SelectImageDestinationButton"
+                                <Button x:Name="SelectImageOrganizationDestinationButton"
                                         DockPanel.Dock="Right"
                                         Content="Seleccionar..."
-                                        Click="SelectImageDestination_Click"
+                                        Click="SelectImageOrganizationDestination_Click"
                                         IsEnabled="False"
                                         Margin="8,0,0,0" />
-                                <TextBox x:Name="ImageDestinationTextBox" IsReadOnly="True" />
+                                <TextBox x:Name="ImageOrganizationDestinationTextBox" IsReadOnly="True" />
                             </DockPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <CheckBox x:Name="CopyVideosCheckBox"
-                                      Content="Copiar vídeos"
+                            <CheckBox x:Name="OrganizeVideosCheckBox"
+                                      Content="Organizar vídeos"
                                       IsEnabled="False"
-                                      Checked="MediaTypeSelection_Changed"
-                                      Unchecked="MediaTypeSelection_Changed"
+                                      Checked="MediaOrganizationSelection_Changed"
+                                      Unchecked="MediaOrganizationSelection_Changed"
                                       FontWeight="SemiBold" />
                             <TextBlock Text="Destino de vídeos" Margin="0,8,0,4" Foreground="#374151" />
                             <DockPanel>
-                                <Button x:Name="SelectVideoDestinationButton"
+                                <Button x:Name="SelectVideoOrganizationDestinationButton"
                                         DockPanel.Dock="Right"
                                         Content="Seleccionar..."
-                                        Click="SelectVideoDestination_Click"
+                                        Click="SelectVideoOrganizationDestination_Click"
                                         IsEnabled="False"
                                         Margin="8,0,0,0" />
-                                <TextBox x:Name="VideoDestinationTextBox" IsReadOnly="True" />
+                                <TextBox x:Name="VideoOrganizationDestinationTextBox" IsReadOnly="True" />
                             </DockPanel>
                         </StackPanel>
                     </Grid>
 
-                    <Button x:Name="CopyMediaButton"
-                            Content="Iniciar copia"
+                    <Button x:Name="OrganizeMediaButton"
+                            Content="Organizar selección"
                             HorizontalAlignment="Left"
                             Background="#2563EB"
                             Foreground="White"
                             IsEnabled="False"
-                            Click="StartMediaCopy_Click"
+                            Click="StartMediaOrganization_Click"
                             Margin="0,14,0,0" />
-                    <TextBlock x:Name="MediaSummaryTextBlock" Margin="0,8,0,6" Foreground="#111827" FontWeight="SemiBold" />
-                    <Border x:Name="DeleteMediaSection"
-                            Visibility="Collapsed"
-                            Background="White"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Padding="12"
-                            Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Eliminar originales (opcional)"
-                                       FontWeight="SemiBold"
-                                       Foreground="#111827" />
-                            <TextBlock Text="Solo se eliminarán originales copiados que sigan coincidiendo con su destino. Los archivos no copiados o modificados se conservarán."
-                                       Margin="0,4,0,8"
-                                       TextWrapping="Wrap"
-                                       Foreground="#4B5563" />
-                            <CheckBox x:Name="DeleteImagesCheckBox"
-                                      Content="Eliminar originales de imágenes"
-                                      IsEnabled="False"
-                                      Checked="MediaDeleteSelection_Changed"
-                                      Unchecked="MediaDeleteSelection_Changed"
-                                      Margin="0,2" />
-                            <CheckBox x:Name="DeleteVideosCheckBox"
-                                      Content="Eliminar originales de vídeos"
-                                      IsEnabled="False"
-                                      Checked="MediaDeleteSelection_Changed"
-                                      Unchecked="MediaDeleteSelection_Changed"
-                                      Margin="0,2" />
-                            <Button x:Name="DeleteMediaButton"
-                                    Content="Eliminar seleccionados"
-                                    HorizontalAlignment="Left"
-                                    IsEnabled="False"
-                                    Click="DeleteCopiedMedia_Click"
-                                    Margin="0,8,0,0" />
-                        </StackPanel>
-                    </Border>
+                    <TextBlock x:Name="MediaOrganizationSummaryTextBlock" Margin="0,8,0,6" Foreground="#111827" FontWeight="SemiBold" />
                     <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
-                    <TextBox x:Name="MediaLogTextBox"
+                    <TextBox x:Name="MediaOrganizerLogTextBox"
                              Margin="0,5,0,0"
                              Height="100"
                              IsReadOnly="True"
@@ -260,7 +157,7 @@
                              VerticalScrollBarVisibility="Auto"
                              FontFamily="Consolas"
                              FontSize="12" />
-                    <TextBlock x:Name="MediaLogPathTextBlock" Margin="0,5,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
+                    <TextBlock x:Name="MediaOrganizerLogPathTextBlock" Margin="0,5,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
 
                 <StackPanel x:Name="WindowsDuplicatesView" Visibility="Collapsed">
