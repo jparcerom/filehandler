@@ -72,12 +72,13 @@ Verificación: compilación Release y 26 pruebas superadas.
 
 Verificación de las mejoras visuales: compilación Release sin advertencias ni errores, 26 pruebas superadas y revisión manual del splash y la pantalla principal en Windows.
 
-### 7. Validación y distribución — en curso
+### 7. Validación y distribución — completado
 - Batería completa Release superada (32 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
 - La búsqueda de duplicados se comprobó en Windows con archivos de prueba: los archivos multimedia reconocidos se agrupan por contenido idéntico, independientemente de sus nombres.
 - La batería cubre rutas de origen superiores a 260 caracteres, archivos bloqueados al organizar/copiar/extraer, destinos sin permiso de escritura y colisiones de nombres.
-- Preparar ambas entregas: una versión portable autocontenida y un instalador de Windows.
-- Generar la versión final tras completar las validaciones y revisar ambas entregas.
+- Publicados el ZIP portable autocontenido y el instalador per-user para `win-x64`; el contenido del ZIP y los metadatos de versión del instalador se verificaron.
+- La instalación y desinstalación silenciosas del instalador se probaron en una ubicación temporal, sin elevación ni inicio de la aplicación.
+- El compilador de Inno Setup terminó sin advertencias. El instalador no está firmado digitalmente.
 
 ## Criterios comunes de cierre
 
