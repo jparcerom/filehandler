@@ -42,7 +42,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button IsEnabled="False"
+                    <Button Click="CopyMedia_Click"
                             HorizontalContentAlignment="Stretch"
                             Background="White"
                             BorderBrush="#D1D5DB"
@@ -52,7 +52,7 @@
                         <StackPanel>
                             <TextBlock Text="Copiar multimedia" FontSize="16" FontWeight="SemiBold" />
                             <TextBlock Text="Clasificar imágenes y vídeos por tipo y elegir destinos." Margin="0,5,0,0" />
-                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
                         </StackPanel>
                     </Button>
 
@@ -136,6 +136,96 @@
                              FontFamily="Consolas"
                              FontSize="12" />
                     <TextBlock x:Name="LogPathTextBlock" Margin="0,8,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel x:Name="MediaCopyView" Visibility="Collapsed">
+                    <Button x:Name="MediaBackButton"
+                            Content="← Todas las operaciones"
+                            HorizontalAlignment="Left"
+                            Click="BackFromMediaCopy_Click"
+                            Margin="0,0,0,14" />
+                    <TextBlock Text="Copiar multimedia" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
+                    <TextBlock Text="Escanea la carpeta de origen y elige qué tipos de archivos copiar y a qué destinos."
+                               Margin="0,6,0,12" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
+
+                    <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,5,0,8">
+                        <Button x:Name="SelectMediaSourceButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectMediaSource_Click"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="MediaSourcePathTextBox" IsReadOnly="True" />
+                    </DockPanel>
+
+                    <ProgressBar x:Name="MediaProgressBar" Height="10" Margin="0,5,0,5" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="MediaStatusTextBlock" Text="Selecciona la carpeta de origen para escanearla."
+                               Foreground="#374151" TextWrapping="Wrap" />
+                    <TextBlock x:Name="MediaCountsTextBlock" Margin="0,5,0,12" Foreground="#111827" FontWeight="SemiBold" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <CheckBox x:Name="CopyImagesCheckBox"
+                                      Content="Copiar imágenes"
+                                      IsEnabled="False"
+                                      Checked="MediaTypeSelection_Changed"
+                                      Unchecked="MediaTypeSelection_Changed"
+                                      FontWeight="SemiBold" />
+                            <TextBlock Text="Destino de imágenes" Margin="0,8,0,4" Foreground="#374151" />
+                            <DockPanel>
+                                <Button x:Name="SelectImageDestinationButton"
+                                        DockPanel.Dock="Right"
+                                        Content="Seleccionar..."
+                                        Click="SelectImageDestination_Click"
+                                        IsEnabled="False"
+                                        Margin="8,0,0,0" />
+                                <TextBox x:Name="ImageDestinationTextBox" IsReadOnly="True" />
+                            </DockPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <CheckBox x:Name="CopyVideosCheckBox"
+                                      Content="Copiar vídeos"
+                                      IsEnabled="False"
+                                      Checked="MediaTypeSelection_Changed"
+                                      Unchecked="MediaTypeSelection_Changed"
+                                      FontWeight="SemiBold" />
+                            <TextBlock Text="Destino de vídeos" Margin="0,8,0,4" Foreground="#374151" />
+                            <DockPanel>
+                                <Button x:Name="SelectVideoDestinationButton"
+                                        DockPanel.Dock="Right"
+                                        Content="Seleccionar..."
+                                        Click="SelectVideoDestination_Click"
+                                        IsEnabled="False"
+                                        Margin="8,0,0,0" />
+                                <TextBox x:Name="VideoDestinationTextBox" IsReadOnly="True" />
+                            </DockPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button x:Name="CopyMediaButton"
+                            Content="Iniciar copia"
+                            HorizontalAlignment="Left"
+                            Background="#2563EB"
+                            Foreground="White"
+                            IsEnabled="False"
+                            Click="StartMediaCopy_Click"
+                            Margin="0,14,0,0" />
+                    <TextBlock x:Name="MediaSummaryTextBlock" Margin="0,8,0,6" Foreground="#111827" FontWeight="SemiBold" />
+                    <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
+                    <TextBox x:Name="MediaLogTextBox"
+                             Margin="0,5,0,0"
+                             Height="100"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="12" />
+                    <TextBlock x:Name="MediaLogPathTextBlock" Margin="0,5,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

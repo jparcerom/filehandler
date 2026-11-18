@@ -18,13 +18,15 @@ Este plan convierte los requisitos de [FileHandler.md](./FileHandler.md) en entr
 
 Verificación: compilación Release y 4 pruebas superadas.
 
-### 2. Escaneo y copia de multimedia
-- Recorrer origen y subcarpetas; contar imágenes, vídeos y subcarpetas.
-- Permitir seleccionar los tipos que se copiarán y un destino para cada tipo.
-- Comprobar colisiones antes de copiar y verificar duplicados por contenido; nunca sobrescribir silenciosamente.
-- Confirmar el inicio y mostrar resultados finales por tipo.
+### 2. Escaneo y copia de multimedia — completado
+- Escaneo recursivo con recuento separado de imágenes, vídeos y subcarpetas; extensiones acordadas comparadas sin distinguir mayúsculas.
+- Selección independiente de tipos y destinos, con confirmación antes de copiar.
+- Comparación SHA-256 ante colisiones; el archivo entrante recibe un sufijo incremental tanto si el contenido es igual como si es distinto.
+- El origen se conserva; la eliminación se reserva para el siguiente hito.
 
-### 3. Limpieza opcional del origen tras la copia
+Verificación: compilación Release y 8 pruebas superadas.
+
+### 3. Limpieza opcional del origen tras la copia — siguiente
 - Permitir elegir qué tipos de origen borrar después de la copia.
 - Mostrar una confirmación explícita que indique los tipos y si se intentarán eliminar subcarpetas.
 - Eliminar únicamente archivos seleccionados y carpetas vacías, recorriendo estas últimas de abajo arriba.

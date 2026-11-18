@@ -1,0 +1,242 @@
+using System.IO;
+using System.Security;
+using System.Security.Cryptography;
+using FileHandler.Models;
+
+namespace FileHandler.Services;
+
+public sealed class MediaCopyService
+{
+    private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff",
+        ".webp", ".heic", ".heif", ".raw"
+    };
+
+    private static readonly HashSet<string> VideoExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp4", ".mov", ".mkv", ".avi", ".wmv", ".flv", ".webm",
+        ".m4v", ".mpg", ".mpeg", ".3gp"
+    };
+
+    private readonly FileTreeScanner _scanner = new();
+    private readonly string _logPath;
+
+    public string LogPath => _logPath;
+
+    public MediaCopyService(string? logPath = null)
+    {
+        _logPath = logPath ?? ActivityLog.DefaultPath;
+    }
+
+    public MediaScanResult Scan(string source, IProgress<OperationProgress> progress)
+    {
+        var sourcePath = Path.GetFullPath(source);
+        if (!Directory.Exists(sourcePath))
+        {
+            throw new DirectoryNotFoundException($"No existe la carpeta de origen: {sourcePath}");
+        }
+
+        using var log = new ActivityLog(LogPath);
+        log.Write($"Inicio del escaneo multimedia. Origen: {sourcePath}");
+        var scan = _scanner.Scan(sourcePath, excludedPath: null, progress, log.Write);
+        var images = scan.Files
+            .Where(file => ImageExtensions.Contains(Path.GetExtension(file)))
+            .ToArray();
+        var videos = scan.Files
+            .Where(file => VideoExtensions.Contains(Path.GetExtension(file)))
+            .ToArray();
+
+        log.Write(
+            $"Escaneo finalizado. Imágenes: {images.Length} | Vídeos: {videos.Length} | " +
+            $"Subcarpetas: {scan.SubdirectoryCount} | Errores: {scan.Errors}");
+        progress.Report(new OperationProgress(
+            images.Length + videos.Length,
+            images.Length + videos.Length,
+            $"Escaneo finalizado: {images.Length} imágenes, {videos.Length} vídeos " +
+            $"en {scan.SubdirectoryCount} subcarpetas."));
+
+        return new MediaScanResult(sourcePath, images, videos, scan.SubdirectoryCount, scan.Errors);
+    }
+
+    public MediaCopySummary Copy(
+        MediaScanResult scan,
+        bool copyImages,
+        string? imageDestination,
+        bool copyVideos,
+        string? videoDestination,
+        IProgress<OperationProgress> progress)
+    {
+        var images = copyImages ? scan.ImageFiles : Array.Empty<string>();
+        var videos = copyVideos ? scan.VideoFiles : Array.Empty<string>();
+        var total = images.Count + videos.Count;
+        if (total == 0)
+        {
+            throw new InvalidOperationException("No hay archivos multimedia seleccionados para copiar.");
+        }
+
+        var normalizedImageDestination = images.Count > 0
+            ? ValidateDestination(scan.SourcePath, imageDestination, "imágenes")
+            : null;
+        var normalizedVideoDestination = videos.Count > 0
+            ? ValidateDestination(scan.SourcePath, videoDestination, "vídeos")
+            : null;
+
+        using var log = new ActivityLog(LogPath);
+        log.Write(
+            $"Inicio de copia multimedia. Imágenes: {images.Count} | Vídeos: {videos.Count}");
+
+        if (normalizedImageDestination is not null)
+        {
+            Directory.CreateDirectory(normalizedImageDestination);
+        }
+        if (normalizedVideoDestination is not null)
+        {
+            Directory.CreateDirectory(normalizedVideoDestination);
+        }
+
+        var imagesCopied = 0;
+        var videosCopied = 0;
+        var errors = 0;
+        var processed = 0;
+        foreach (var file in images)
+        {
+            if (CopyFile(file, normalizedImageDestination!, log, out var message))
+            {
+                imagesCopied++;
+            }
+            else
+            {
+                errors++;
+            }
+            processed++;
+            progress.Report(new OperationProgress(processed, total, message));
+        }
+
+        foreach (var file in videos)
+        {
+            if (CopyFile(file, normalizedVideoDestination!, log, out var message))
+            {
+                videosCopied++;
+            }
+            else
+            {
+                errors++;
+            }
+            processed++;
+            progress.Report(new OperationProgress(processed, total, message));
+        }
+
+        var summary = new MediaCopySummary(
+            images.Count,
+            videos.Count,
+            imagesCopied,
+            videosCopied,
+            scan.Errors,
+            errors);
+        log.Write(
+            $"Fin de copia multimedia. Imágenes copiadas: {summary.ImagesCopied}/{summary.ImagesToCopy} | " +
+            $"Vídeos copiados: {summary.VideosCopied}/{summary.VideosToCopy} | " +
+            $"Errores de escaneo: {summary.ScanErrors} | Errores de copia: {summary.CopyErrors}");
+        progress.Report(new OperationProgress(
+            total,
+            total,
+            $"Copia finalizada: {summary.ImagesCopied} imágenes y {summary.VideosCopied} vídeos; " +
+            $"{summary.CopyErrors} errores."));
+        return summary;
+    }
+
+    private static string ValidateDestination(string source, string? destination, string fileType)
+    {
+        if (string.IsNullOrWhiteSpace(destination))
+        {
+            throw new ArgumentException($"Selecciona un destino para los archivos de {fileType}.");
+        }
+
+        var destinationPath = Path.GetFullPath(destination);
+        if (FileTreeScanner.IsSameOrDescendant(destinationPath, source))
+        {
+            throw new ArgumentException(
+                $"El destino de {fileType} no puede ser el origen ni estar dentro de él.");
+        }
+
+        return destinationPath;
+    }
+
+    private static bool CopyFile(
+        string sourceFile,
+        string destination,
+        ActivityLog log,
+        out string message)
+    {
+        try
+        {
+            var target = GetAvailableDestination(sourceFile, destination, log);
+            File.Copy(sourceFile, target, overwrite: false);
+            message = $"[COPIADO] {sourceFile} -> {target}";
+            log.Write(message);
+            return true;
+        }
+        catch (IOException exception)
+        {
+            message = $"[ERROR] No se pudo copiar {sourceFile}: {exception.Message}";
+            log.Write(message);
+            return false;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            message = $"[ERROR] Sin permiso para copiar {sourceFile}: {exception.Message}";
+            log.Write(message);
+            return false;
+        }
+        catch (SecurityException exception)
+        {
+            message = $"[ERROR] Acceso denegado al copiar {sourceFile}: {exception.Message}";
+            log.Write(message);
+            return false;
+        }
+    }
+
+    private static string GetAvailableDestination(string sourceFile, string destination, ActivityLog log)
+    {
+        var fileName = Path.GetFileName(sourceFile);
+        var desiredPath = Path.Combine(destination, fileName);
+        if (!File.Exists(desiredPath) && !Directory.Exists(desiredPath))
+        {
+            return desiredPath;
+        }
+
+        if (File.Exists(desiredPath))
+        {
+            var sourceHash = ComputeSha256(sourceFile);
+            var destinationHash = ComputeSha256(desiredPath);
+            var match = string.Equals(sourceHash, destinationHash, StringComparison.Ordinal);
+            log.Write(match
+                ? $"[DUPLICADO IDÉNTICO] Se conservarán ambos archivos: {desiredPath}"
+                : $"[COLISIÓN] Contenido distinto; se conservará el existente y se renombrará el entrante: {desiredPath}");
+        }
+        else
+        {
+            log.Write($"[COLISIÓN] El destino es una carpeta; se renombrará el entrante: {desiredPath}");
+        }
+
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+        for (long suffix = 1; suffix < long.MaxValue; suffix++)
+        {
+            var candidate = Path.Combine(destination, $"{name}-{suffix}{extension}");
+            if (!File.Exists(candidate) && !Directory.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new IOException($"No se pudo generar un nombre disponible para {fileName}.");
+    }
+
+    private static string ComputeSha256(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexString(SHA256.HashData(stream));
+    }
+}

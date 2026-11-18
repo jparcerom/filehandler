@@ -50,7 +50,11 @@ La aplicación de escritorio se desarrolla en C# con .NET 8 y WPF para Windows.
 ### Decisión para la versión 2.0
 La primera operación implementada es "Organizar por fecha": recorre la carpeta de origen y sus subcarpetas, elige la fecha más antigua entre creación y modificación, y mueve los archivos a carpetas `Año/NN-Mes`. Si ya existe un elemento con el mismo nombre en el destino, el archivo se omite y se registra para evitar sobrescrituras.
 
-Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las demás operaciones descritas en este documento quedan pendientes de implementación.
+La operación "Copiar multimedia" cuenta recursivamente imágenes y vídeos. Por defecto reconoce, sin distinguir mayúsculas, imágenes `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tif`, `.tiff`, `.webp`, `.heic`, `.heif` y `.raw`; y vídeos `.mp4`, `.mov`, `.mkv`, `.avi`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg` y `.3gp`.
+
+La copia compara mediante SHA-256 cuando ya existe un archivo con el mismo nombre. Tanto si el contenido coincide como si difiere, conserva el archivo existente y guarda el entrante con un sufijo incremental (`-1`, `-2`, etc.); nunca sobrescribe. La operación mantiene los archivos de origen. La eliminación opcional del origen se implementará después como un paso separado y confirmado.
+
+Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las operaciones restantes están detalladas en el [roadmap](./ROADMAP.md).
 
 Para compilar y ejecutar las pruebas desde la raíz del repositorio se necesita el SDK de .NET 8:
 

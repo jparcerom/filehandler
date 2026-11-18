@@ -1,11 +1,13 @@
 using System.IO;
-using System.Text;
 using FileHandler.Models;
 
 namespace FileHandler.Services;
 
 public sealed class DateOrganizer
 {
+    private readonly FileTreeScanner _scanner = new();
+    private readonly string _logPath;
+
     private static readonly string[] MonthNames =
     [
         "01-Enero", "02-Febrero", "03-Marzo", "04-Abril",
@@ -13,15 +15,11 @@ public sealed class DateOrganizer
         "09-Septiembre", "10-Octubre", "11-Noviembre", "12-Diciembre"
     ];
 
-    public string LogPath { get; }
+    public string LogPath => _logPath;
 
     public DateOrganizer(string? logPath = null)
     {
-        LogPath = logPath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FileHandler",
-            "logs",
-            "filehandler.log");
+        _logPath = logPath ?? ActivityLog.DefaultPath;
     }
 
     public OperationSummary Organize(
@@ -43,70 +41,13 @@ public sealed class DateOrganizer
         }
 
         Directory.CreateDirectory(destinationPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(LogPath)!);
+        using var log = new ActivityLog(LogPath);
+        log.Write($"Inicio de organización por fecha. Origen: {sourcePath} | Destino: {destinationPath}");
+        var scan = _scanner.Scan(sourcePath, destinationPath, progress, log.Write);
+        var files = scan.Files;
+        var errors = scan.Errors;
 
-        using var log = new StreamWriter(LogPath, append: true, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-        WriteLog(log, $"Inicio de organización por fecha. Origen: {sourcePath} | Destino: {destinationPath}");
-
-        var files = new List<string>();
-        var errors = 0;
-        var directories = new Stack<string>();
-        directories.Push(sourcePath);
-
-        while (directories.Count > 0)
-        {
-            var current = directories.Pop();
-            progress.Report(new OperationProgress(
-                files.Count,
-                0,
-                $"Escaneando {current} · {files.Count} archivos encontrados.",
-                IsScanning: true));
-            try
-            {
-                foreach (var file in Directory.EnumerateFiles(current))
-                {
-                    files.Add(file);
-                }
-
-                foreach (var subdirectory in Directory.EnumerateDirectories(current))
-                {
-                    if (IsSameOrDescendant(subdirectory, destinationPath))
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        if ((File.GetAttributes(subdirectory) & FileAttributes.ReparsePoint) == 0)
-                        {
-                            directories.Push(subdirectory);
-                        }
-                    }
-                    catch (IOException exception)
-                    {
-                        errors++;
-                        WriteLog(log, $"[ERROR] No se pudo leer la carpeta {subdirectory}: {exception.Message}");
-                    }
-                    catch (UnauthorizedAccessException exception)
-                    {
-                        errors++;
-                        WriteLog(log, $"[ERROR] Sin permiso para leer la carpeta {subdirectory}: {exception.Message}");
-                    }
-                }
-            }
-            catch (IOException exception)
-            {
-                errors++;
-                WriteLog(log, $"[ERROR] No se pudo recorrer la carpeta {current}: {exception.Message}");
-            }
-            catch (UnauthorizedAccessException exception)
-            {
-                errors++;
-                WriteLog(log, $"[ERROR] Sin permiso para recorrer la carpeta {current}: {exception.Message}");
-            }
-        }
-
-        WriteLog(log, $"Archivos encontrados: {files.Count}");
+        log.Write($"Archivos encontrados: {files.Count}");
         var moved = 0;
         var skipped = 0;
         progress.Report(new OperationProgress(0, files.Count, $"Se encontraron {files.Count} archivos."));
@@ -132,7 +73,7 @@ public sealed class DateOrganizer
                 {
                     skipped++;
                     var message = $"[OMITIDO] Ya existe un elemento con ese nombre: {targetFile}";
-                    WriteLog(log, message);
+                    log.Write(message);
                     progress.Report(new OperationProgress(index + 1, files.Count, message));
                     continue;
                 }
@@ -141,27 +82,27 @@ public sealed class DateOrganizer
                 File.Move(sourceFile, targetFile);
                 moved++;
                 var successMessage = $"[MOVIDO] {sourceFile} -> {targetFile}";
-                WriteLog(log, successMessage);
+                log.Write(successMessage);
                 progress.Report(new OperationProgress(index + 1, files.Count, successMessage));
             }
             catch (IOException exception)
             {
                 errors++;
                 var message = $"[ERROR] {sourceFile}: {exception.Message}";
-                WriteLog(log, message);
+                log.Write(message);
                 progress.Report(new OperationProgress(index + 1, files.Count, message));
             }
             catch (UnauthorizedAccessException exception)
             {
                 errors++;
                 var message = $"[ERROR] Sin permiso para mover {sourceFile}: {exception.Message}";
-                WriteLog(log, message);
+                log.Write(message);
                 progress.Report(new OperationProgress(index + 1, files.Count, message));
             }
         }
 
         var summary = new OperationSummary(files.Count, moved, skipped, errors);
-        WriteLog(log, $"Fin. Encontrados: {summary.Total} | Movidos: {summary.Moved} | Omitidos: {summary.Skipped} | Errores: {summary.Errors}");
+        log.Write($"Fin. Encontrados: {summary.Total} | Movidos: {summary.Moved} | Omitidos: {summary.Skipped} | Errores: {summary.Errors}");
         progress.Report(new OperationProgress(
             files.Count,
             files.Count,
@@ -175,18 +116,4 @@ public sealed class DateOrganizer
             Path.TrimEndingDirectorySeparator(second),
             StringComparison.OrdinalIgnoreCase);
 
-    private static bool IsSameOrDescendant(string path, string parent)
-    {
-        var relativePath = Path.GetRelativePath(parent, path);
-        return relativePath == "." ||
-               (!Path.IsPathRooted(relativePath) &&
-                relativePath != ".." &&
-                !relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal));
-    }
-
-    private static void WriteLog(StreamWriter log, string message)
-    {
-        log.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
-        log.Flush();
-    }
 }
