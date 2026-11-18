@@ -28,8 +28,22 @@ VersionInfoVersion={#AppVersion}
 VersionInfoCompany={#AppPublisher}
 CloseApplications=yes
 
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+
+[CustomMessages]
+english.DesktopIconTask=Create a desktop shortcut
+spanish.DesktopIconTask=Crear un acceso directo en el escritorio
+english.ShortcutsGroup=Shortcuts:
+spanish.ShortcutsGroup=Accesos directos:
+english.LaunchFileHandler=Launch FileHandler
+spanish.LaunchFileHandler=Iniciar FileHandler
+english.CannotSaveLanguage=Could not save the selected application language.
+spanish.CannotSaveLanguage=No se pudo guardar el idioma seleccionado de la aplicación.
+
 [Tasks]
-Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio"; GroupDescription: "Accesos directos:"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:DesktopIconTask}"; GroupDescription: "{cm:ShortcutsGroup}"; Flags: unchecked
 
 [Files]
 Source: "..\artifacts\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -38,5 +52,27 @@ Source: "..\artifacts\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{group}\FileHandler"; Filename: "{app}\FileHandler.exe"
 Name: "{userdesktop}\FileHandler"; Filename: "{app}\FileHandler.exe"; Tasks: desktopicon
 
+[UninstallDelete]
+Type: files; Name: "{app}\app-language.txt"
+
 [Run]
-Filename: "{app}\FileHandler.exe"; Description: "Iniciar FileHandler"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\FileHandler.exe"; Description: "{cm:LaunchFileHandler}"; Flags: postinstall nowait skipifsilent
+
+[Code]
+function GetAppLanguage(Param: String): String;
+begin
+  if ActiveLanguage = 'english' then
+    Result := 'en'
+  else
+    Result := 'es';
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+    if not SaveStringToFile(
+      ExpandConstant('{app}\app-language.txt'),
+      GetAppLanguage(''),
+      False) then
+      RaiseException(ExpandConstant('{cm:CannotSaveLanguage}'));
+end;

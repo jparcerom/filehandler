@@ -1,5 +1,6 @@
 using System.IO;
 using System.Security;
+using FileHandler.Localization;
 using FileHandler.Models;
 
 namespace FileHandler.Services;
@@ -24,7 +25,7 @@ public sealed class FileTreeScanner
             progress?.Report(new OperationProgress(
                 files.Count,
                 0,
-                $"Escaneando {current} · {files.Count} archivos encontrados.",
+                Text.Format("ScanningFolderProgress", current, files.Count),
                 IsScanning: true));
 
             try
@@ -34,17 +35,17 @@ public sealed class FileTreeScanner
             catch (IOException exception)
             {
                 errors++;
-                log($"[ERROR] No se pudo recorrer {current}: {exception.Message}");
+                log(Text.Format("CannotEnumerateFolder", current, exception.Message));
             }
             catch (UnauthorizedAccessException exception)
             {
                 errors++;
-                log($"[ERROR] Sin permiso para recorrer {current}: {exception.Message}");
+                log(Text.Format("NoPermissionEnumeratingFolder", current, exception.Message));
             }
             catch (SecurityException exception)
             {
                 errors++;
-                log($"[ERROR] Acceso denegado al recorrer {current}: {exception.Message}");
+                log(Text.Format("AccessDeniedEnumeratingFolder", current, exception.Message));
             }
 
             try
@@ -60,7 +61,7 @@ public sealed class FileTreeScanner
                     {
                         if ((File.GetAttributes(subdirectory) & FileAttributes.ReparsePoint) != 0)
                         {
-                            log($"[OMITIDO] No se recorrió el enlace de carpeta: {subdirectory}");
+                            log(Text.Format("SkippedFolderLink", subdirectory));
                             continue;
                         }
 
@@ -70,34 +71,34 @@ public sealed class FileTreeScanner
                     catch (IOException exception)
                     {
                         errors++;
-                        log($"[ERROR] No se pudo leer la carpeta {subdirectory}: {exception.Message}");
+                        log(Text.Format("CannotReadFolder", subdirectory, exception.Message));
                     }
                     catch (UnauthorizedAccessException exception)
                     {
                         errors++;
-                        log($"[ERROR] Sin permiso para leer la carpeta {subdirectory}: {exception.Message}");
+                        log(Text.Format("NoPermissionReadingFolder", subdirectory, exception.Message));
                     }
                     catch (SecurityException exception)
                     {
                         errors++;
-                        log($"[ERROR] Acceso denegado al leer la carpeta {subdirectory}: {exception.Message}");
+                        log(Text.Format("AccessDeniedReadingFolder", subdirectory, exception.Message));
                     }
                 }
             }
             catch (IOException exception)
             {
                 errors++;
-                log($"[ERROR] No se pudieron enumerar las subcarpetas de {current}: {exception.Message}");
+                log(Text.Format("CannotEnumerateSubfolders", current, exception.Message));
             }
             catch (UnauthorizedAccessException exception)
             {
                 errors++;
-                log($"[ERROR] Sin permiso para enumerar las subcarpetas de {current}: {exception.Message}");
+                log(Text.Format("NoPermissionEnumeratingSubfolders", current, exception.Message));
             }
             catch (SecurityException exception)
             {
                 errors++;
-                log($"[ERROR] Acceso denegado al enumerar las subcarpetas de {current}: {exception.Message}");
+                log(Text.Format("AccessDeniedEnumeratingSubfolders", current, exception.Message));
             }
         }
 

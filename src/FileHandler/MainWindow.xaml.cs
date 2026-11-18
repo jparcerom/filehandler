@@ -5,6 +5,7 @@ using System.IO;
 using System.Security;
 using System.Windows;
 using System.Windows.Navigation;
+using FileHandler.Localization;
 using Microsoft.Win32;
 using FileHandler.Models;
 using FileHandler.Services;
@@ -23,9 +24,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        DateTextBlock.Text = DateTime.Now.ToString("dd/MM/yyyy");
-        SubfolderLogPathTextBlock.Text = $"Los registros se guardan en: {_subfolderFileService.LogPath}";
-        MediaOrganizerLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaOrganizerService.LogPath}";
+        DateTextBlock.Text = DateTime.Now.ToString("d", AppLanguage.Culture);
+        SubfolderLogPathTextBlock.Text = Text.Format("LogPath", _subfolderFileService.LogPath);
+        MediaOrganizerLogPathTextBlock.Text = Text.Format("LogPath", _mediaOrganizerService.LogPath);
     }
 
     private void ContactHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -39,8 +40,8 @@ public partial class MainWindow : Window
         {
             MessageBox.Show(
                 this,
-                $"No se pudo abrir el enlace de correo: {exception.Message}",
-                "No se pudo abrir el correo",
+                Text.Format("EmailOpenFailed", exception.Message),
+                Text.Get("EmailErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -48,8 +49,8 @@ public partial class MainWindow : Window
         {
             MessageBox.Show(
                 this,
-                $"No se pudo abrir el enlace de correo: {exception.Message}",
-                "No se pudo abrir el correo",
+                Text.Format("EmailOpenFailed", exception.Message),
+                Text.Get("EmailErrorTitle"),
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -99,7 +100,7 @@ public partial class MainWindow : Window
 
     private async void SelectSubfolderSource_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPath = SelectFolder("Selecciona la carpeta de origen");
+        var selectedPath = SelectFolder(Text.Get("SelectSourceFolder"));
         if (selectedPath is not null)
         {
             SubfolderSourcePathTextBox.Text = selectedPath;
@@ -116,7 +117,7 @@ public partial class MainWindow : Window
         SubfolderLogTextBox.Clear();
         SubfolderProgressBar.Value = 0;
         SubfolderProgressBar.IsIndeterminate = true;
-        SubfolderStatusTextBlock.Text = "Escaneando archivos en subcarpetas...";
+        SubfolderStatusTextBlock.Text = Text.Get("ScanningSubfolderFiles");
         _subfolderOperationRunning = true;
         SelectSubfolderSourceButton.IsEnabled = false;
         SubfolderBackButton.IsEnabled = false;
@@ -127,15 +128,15 @@ public partial class MainWindow : Window
         {
             var scan = await Task.Run(() => _subfolderFileService.Scan(source, progress));
             _subfolderFileScan = scan;
-            SubfolderCountsTextBlock.Text = $"{scan.Files.Count} archivos encontrados en subcarpetas";
+            SubfolderCountsTextBlock.Text = Text.Format("SubfolderFilesFound", scan.Files.Count);
             if (scan.ScanErrors > 0)
             {
-                SubfolderCountsTextBlock.Text += $" · {scan.ScanErrors} errores de escaneo";
+                SubfolderCountsTextBlock.Text += Text.Format("ScanErrorsSuffix", scan.ScanErrors);
             }
 
             if (scan.Files.Count == 0)
             {
-                SubfolderSummaryTextBlock.Text = "No hay archivos en subcarpetas para mover.";
+                SubfolderSummaryTextBlock.Text = Text.Get("NoSubfolderFilesToMove");
             }
         }
         catch (ArgumentException exception)
@@ -169,7 +170,7 @@ public partial class MainWindow : Window
 
     private void SelectSubfolderDestination_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPath = SelectFolder("Selecciona la carpeta de destino");
+        var selectedPath = SelectFolder(Text.Get("SelectDestinationFolder"));
         if (selectedPath is not null)
         {
             SubfolderDestinationPathTextBox.Text = selectedPath;
@@ -197,11 +198,11 @@ public partial class MainWindow : Window
 
         var confirmation = MessageBox.Show(
             this,
-            $"Se intentarán mover {scan.Files.Count} archivos encontrados en subcarpetas a la raíz del destino. " +
-            $"Los archivos que ya estén en la raíz del origen o del destino se conservarán.{Environment.NewLine}{Environment.NewLine}" +
-            "Ante cualquier colisión se conservarán ambos archivos y el entrante recibirá un sufijo incremental, " +
-            "incluso si su contenido es idéntico. ¿Quieres continuar?",
-            "Confirmar extracción de archivos",
+            Text.Format(
+                "ConfirmMoveSubfolderFiles",
+                scan.Files.Count,
+                Environment.NewLine),
+            Text.Get("ConfirmExtractTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (confirmation != MessageBoxResult.Yes)
@@ -221,10 +222,14 @@ public partial class MainWindow : Window
         {
             var summary = await Task.Run(() => _subfolderFileService.Move(scan, destination, progress));
             SubfolderSummaryTextBlock.Text =
-                $"Encontrados: {summary.FilesFound} · Movidos: {summary.Moved} · " +
-                $"Renombrados por colisión: {summary.CollisionRenames} · Ya en destino: " +
-                $"{summary.AlreadyAtDestination} · Errores de escaneo/movimiento: " +
-                $"{summary.ScanErrors}/{summary.Errors}.";
+                Text.Format(
+                    "SubfolderMoveSummary",
+                    summary.FilesFound,
+                    summary.Moved,
+                    summary.CollisionRenames,
+                    summary.AlreadyAtDestination,
+                    summary.ScanErrors,
+                    summary.Errors);
             _subfolderFileScan = null;
         }
         catch (ArgumentException exception)
@@ -277,9 +282,9 @@ public partial class MainWindow : Window
     private void ShowSubfolderOperationError(string message)
     {
         SubfolderProgressBar.IsIndeterminate = false;
-        SubfolderStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
+        SubfolderStatusTextBlock.Text = Text.Format("OperationFailed", message);
         SubfolderLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
-        MessageBox.Show(this, message, "Error al extraer archivos", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(this, message, Text.Get("ExtractFilesErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private void ResetSubfolderView()
@@ -292,7 +297,7 @@ public partial class MainWindow : Window
         SubfolderLogTextBox.Clear();
         SubfolderProgressBar.Value = 0;
         SubfolderProgressBar.IsIndeterminate = false;
-        SubfolderStatusTextBlock.Text = "Selecciona la carpeta de origen para buscar archivos en sus subcarpetas.";
+        SubfolderStatusTextBlock.Text = Text.Get("SelectSourceToSearchSubfolders");
         SelectSubfolderSourceButton.IsEnabled = true;
         SubfolderBackButton.IsEnabled = true;
         UpdateSubfolderControls();
@@ -300,7 +305,7 @@ public partial class MainWindow : Window
 
     private async void SelectMediaOrganizerSource_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPath = SelectFolder("Selecciona la carpeta de origen multimedia");
+        var selectedPath = SelectFolder(Text.Get("SelectMediaSource"));
         if (selectedPath is null)
         {
             return;
@@ -322,7 +327,7 @@ public partial class MainWindow : Window
         MediaOrganizerLogTextBox.Clear();
         MediaOrganizerProgressBar.Value = 0;
         MediaOrganizerProgressBar.IsIndeterminate = true;
-        MediaOrganizerStatusTextBlock.Text = "Escaneando imágenes y vídeos...";
+        MediaOrganizerStatusTextBlock.Text = Text.Get("ScanningMedia");
         _mediaOrganizationRunning = true;
         SelectMediaOrganizerSourceButton.IsEnabled = false;
         MediaOrganizerBackButton.IsEnabled = false;
@@ -334,16 +339,21 @@ public partial class MainWindow : Window
             var scan = await Task.Run(() => _mediaOrganizerService.Scan(source, progress));
             _mediaScanResult = scan;
             MediaOrganizerCountsTextBlock.Text =
-                $"{scan.ImageFiles.Count} imágenes · {scan.VideoFiles.Count} vídeos · " +
-                $"{scan.SubdirectoryCount} subcarpetas";
+                Text.Format(
+                    "MediaScanCounts",
+                    scan.ImageFiles.Count,
+                    Text.Get("Images"),
+                    scan.VideoFiles.Count,
+                    Text.Get("Videos"),
+                    scan.SubdirectoryCount);
             if (scan.Errors > 0)
             {
-                MediaOrganizerCountsTextBlock.Text += $" · {scan.Errors} errores de escaneo";
+                MediaOrganizerCountsTextBlock.Text += Text.Format("ScanErrorsSuffix", scan.Errors);
             }
 
             if (scan.ImageFiles.Count == 0 && scan.VideoFiles.Count == 0)
             {
-                MediaOrganizationSummaryTextBlock.Text = "No se encontraron imágenes ni vídeos compatibles.";
+                MediaOrganizationSummaryTextBlock.Text = Text.Get("NoCompatibleMedia");
             }
         }
         catch (ArgumentException exception)
@@ -377,7 +387,7 @@ public partial class MainWindow : Window
 
     private void SelectImageOrganizationDestination_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPath = SelectFolder("Selecciona el destino de las imágenes");
+        var selectedPath = SelectFolder(Text.Get("SelectImageDestination"));
         if (selectedPath is not null)
         {
             ImageOrganizationDestinationTextBox.Text = selectedPath;
@@ -387,7 +397,7 @@ public partial class MainWindow : Window
 
     private void SelectVideoOrganizationDestination_Click(object sender, RoutedEventArgs e)
     {
-        var selectedPath = SelectFolder("Selecciona el destino de los vídeos");
+        var selectedPath = SelectFolder(Text.Get("SelectVideoDestination"));
         if (selectedPath is not null)
         {
             VideoOrganizationDestinationTextBox.Text = selectedPath;
@@ -433,21 +443,28 @@ public partial class MainWindow : Window
         var selectedItems = new List<string>();
         if (organizeImages)
         {
-            selectedItems.Add($"{scan.ImageFiles.Count} imágenes → {imageDestination}");
+            selectedItems.Add(Text.Format(
+                "SelectedMediaItem",
+                scan.ImageFiles.Count,
+                Text.Get("Images"),
+                imageDestination));
         }
         if (organizeVideos)
         {
-            selectedItems.Add($"{scan.VideoFiles.Count} vídeos → {videoDestination}");
+            selectedItems.Add(Text.Format(
+                "SelectedMediaItem",
+                scan.VideoFiles.Count,
+                Text.Get("Videos"),
+                videoDestination));
         }
 
         var confirmation = MessageBox.Show(
             this,
-            $"Se moverán estos archivos a carpetas Año/Mes:{Environment.NewLine}{Environment.NewLine}" +
-            string.Join(Environment.NewLine, selectedItems) +
-            $"{Environment.NewLine}{Environment.NewLine}Los nombres en conflicto recibirán un sufijo incremental. " +
-            "Si el movimiento entre volúmenes no es posible, se copiará y verificará por SHA-256 antes de borrar el origen. " +
-            "¿Quieres continuar?",
-            "Confirmar organización multimedia",
+            Text.Format(
+                "ConfirmMediaOrganization",
+                Environment.NewLine,
+                string.Join(Environment.NewLine, selectedItems)),
+            Text.Get("ConfirmMediaOrganizationTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
         if (confirmation != MessageBoxResult.Yes)
@@ -473,11 +490,18 @@ public partial class MainWindow : Window
                 videoDestination,
                 progress));
             MediaOrganizationSummaryTextBlock.Text =
-                $"Movidos: {summary.ImagesMoved}/{summary.ImagesToOrganize} imágenes · " +
-                $"{summary.VideosMoved}/{summary.VideosToOrganize} vídeos · " +
-                $"Renombrados por colisión: {summary.CollisionRenames} · Ya organizados: " +
-                $"{summary.AlreadyOrganized} · Errores de escaneo/movimiento: " +
-                $"{summary.ScanErrors}/{summary.Errors}.";
+                Text.Format(
+                    "MediaOrganizationSummary",
+                    summary.ImagesMoved,
+                    summary.ImagesToOrganize,
+                    Text.Get("Images"),
+                    summary.VideosMoved,
+                    summary.VideosToOrganize,
+                    Text.Get("Videos"),
+                    summary.CollisionRenames,
+                    summary.AlreadyOrganized,
+                    summary.ScanErrors,
+                    summary.Errors);
             _mediaScanResult = null;
         }
         catch (ArgumentException exception)
@@ -530,12 +554,12 @@ public partial class MainWindow : Window
     private void ShowMediaOrganizationError(string message)
     {
         MediaOrganizerProgressBar.IsIndeterminate = false;
-        MediaOrganizerStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
+        MediaOrganizerStatusTextBlock.Text = Text.Format("OperationFailed", message);
         MediaOrganizerLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
         MessageBox.Show(
             this,
             message,
-            "Error al organizar multimedia",
+            Text.Get("OrganizeMediaErrorTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }
@@ -550,7 +574,7 @@ public partial class MainWindow : Window
         VideoOrganizationDestinationTextBox.Clear();
         MediaOrganizerProgressBar.Value = 0;
         MediaOrganizerProgressBar.IsIndeterminate = false;
-        MediaOrganizerStatusTextBlock.Text = "Selecciona la carpeta de origen para escanearla.";
+        MediaOrganizerStatusTextBlock.Text = Text.Get("SelectSourceToScan");
         MediaOrganizerCountsTextBlock.Text = string.Empty;
         MediaOrganizationSummaryTextBlock.Text = string.Empty;
         MediaOrganizerLogTextBox.Clear();

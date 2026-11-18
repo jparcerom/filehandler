@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using FileHandler.Models;
 using FileHandler.Services;
@@ -88,6 +89,26 @@ public sealed class DateOrganizerTests
         {
             Directory.Delete(root, recursive: true);
         }
+
+    }
+
+    [TestMethod]
+    public void GetMonthDirectory_UsesSelectedLanguageAndKeepsNumericPrefix()
+    {
+        var date = new DateTime(2024, 3, 1);
+
+        Assert.AreEqual(
+            Path.Combine("destination", "2024", "03-Marzo"),
+            DateOrganizationPath.GetMonthDirectory(
+                "destination",
+                date,
+                CultureInfo.GetCultureInfo("es-ES")));
+        Assert.AreEqual(
+            Path.Combine("destination", "2024", "03-March"),
+            DateOrganizationPath.GetMonthDirectory(
+                "destination",
+                date,
+                CultureInfo.GetCultureInfo("en-US")));
     }
 
     [TestMethod]

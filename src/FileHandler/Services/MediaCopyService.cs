@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security;
 using System.Security.Cryptography;
+using FileHandler.Localization;
 using FileHandler.Models;
 
 namespace FileHandler.Services;
@@ -34,11 +35,11 @@ public sealed class MediaCopyService
         var sourcePath = Path.GetFullPath(source);
         if (!Directory.Exists(sourcePath))
         {
-            throw new DirectoryNotFoundException($"No existe la carpeta de origen: {sourcePath}");
+            throw new DirectoryNotFoundException(Text.Format("SourceFolderNotFound", sourcePath));
         }
 
         using var log = new ActivityLog(LogPath);
-        log.Write($"Inicio del escaneo multimedia. Origen: {sourcePath}");
+        log.Write(Text.Format("StartingMediaScan", sourcePath));
         var scan = _scanner.Scan(sourcePath, excludedPath: null, progress, log.Write);
         var images = scan.Files
             .Where(file => ImageExtensions.Contains(Path.GetExtension(file)))
@@ -48,13 +49,22 @@ public sealed class MediaCopyService
             .ToArray();
 
         log.Write(
-            $"Escaneo finalizado. Imágenes: {images.Length} | Vídeos: {videos.Length} | " +
-            $"Subcarpetas: {scan.SubdirectoryCount} | Errores: {scan.Errors}");
+            Text.Format(
+                "MediaScanCompletedLog",
+                images.Length,
+                videos.Length,
+                scan.SubdirectoryCount,
+                scan.Errors));
         progress.Report(new OperationProgress(
             images.Length + videos.Length,
             images.Length + videos.Length,
-            $"Escaneo finalizado: {images.Length} imágenes, {videos.Length} vídeos " +
-            $"en {scan.SubdirectoryCount} subcarpetas."));
+            Text.Format(
+                "MediaScanCompleted",
+                images.Length,
+                Text.Get("Images"),
+                videos.Length,
+                Text.Get("Videos"),
+                scan.SubdirectoryCount)));
 
         return new MediaScanResult(sourcePath, images, videos, scan.Directories, scan.Errors);
     }

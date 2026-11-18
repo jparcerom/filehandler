@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security;
 using System.Security.Cryptography;
+using FileHandler.Localization;
 using FileHandler.Models;
 using Microsoft.VisualBasic.FileIO;
 
@@ -40,7 +41,7 @@ public sealed class MediaDuplicateService
             if (!TryGetFileSize(files[index].Path, out var size, out var error))
             {
                 verificationErrors++;
-                log.Write($"[ERROR] No se pudo leer el tamaño de {files[index].Path}: {error}");
+                log.Write(Text.Format("FileSizeReadFailed", files[index].Path, error));
                 continue;
             }
 
@@ -59,7 +60,7 @@ public sealed class MediaDuplicateService
         progress.Report(new OperationProgress(
             0,
             hashCount,
-            $"Comparando el contenido de {hashCount} archivos del mismo tamaño."));
+            Text.Format("ComparingSameSizeFiles", hashCount)));
 
         foreach (var sameSizeGroup in sameSizeGroups)
         {
@@ -69,31 +70,31 @@ public sealed class MediaDuplicateService
                 if (!TryComputeSha256(file.Path, out var hash, out var currentSize, out var error))
                 {
                     verificationErrors++;
-                    log.Write($"[ERROR] No se pudo comparar {file.Path}: {error}");
+                    log.Write(Text.Format("FileComparisonFailed", file.Path, error));
                     progress.Report(new OperationProgress(
                         ++processed,
                         hashCount,
-                        $"No se pudo verificar {file.Path}."));
+                        Text.Format("FileVerificationFailed", file.Path)));
                     continue;
                 }
 
                 if (currentSize != file.Size)
                 {
                     verificationErrors++;
-                    log.Write($"[CAMBIÓ] El tamaño cambió durante el escaneo: {file.Path}");
+                    log.Write(Text.Format("FileSizeChangedDuringScanLog", file.Path));
                     progress.Report(new OperationProgress(
                         ++processed,
                         hashCount,
-                        $"El archivo cambió durante el escaneo: {file.Path}"));
+                        Text.Format("FileChangedDuringScan", file.Path)));
                     continue;
                 }
 
                 files[entry.Index] = file with { Sha256 = hash };
-                log.Write($"[HASH] {file.Path} · {hash}");
+                log.Write(Text.Format("FileHashCalculated", file.Path, hash));
                 progress.Report(new OperationProgress(
                     ++processed,
                     hashCount,
-                    $"Comparando contenido: {file.Path}"));
+                    Text.Format("ComparingFileContent", file.Path)));
             }
         }
 
@@ -112,13 +113,17 @@ public sealed class MediaDuplicateService
             .ToArray();
 
         log.Write(
-            $"Búsqueda finalizada. Imágenes: {mediaScan.ImageFiles.Count} | Vídeos: {mediaScan.VideoFiles.Count} | " +
-            $"Grupos idénticos: {duplicateGroups.Length} | " +
-            $"Errores de escaneo: {mediaScan.Errors} | Errores de verificación: {verificationErrors}");
+            Text.Format(
+                "DuplicateSearchCompletedLog",
+                mediaScan.ImageFiles.Count,
+                mediaScan.VideoFiles.Count,
+                duplicateGroups.Length,
+                mediaScan.Errors,
+                verificationErrors));
         progress.Report(new OperationProgress(
             hashCount,
             hashCount,
-            $"Búsqueda finalizada: {duplicateGroups.Length} grupos de contenido idéntico."));
+            Text.Format("DuplicateSearchCompleted", duplicateGroups.Length)));
 
         return new MediaDuplicateScanResult(
             mediaScan.SourcePath,
@@ -136,7 +141,7 @@ public sealed class MediaDuplicateService
     {
         if (selectedPaths.Count == 0)
         {
-            throw new InvalidOperationException("Selecciona al menos un archivo duplicado.");
+            throw new InvalidOperationException(Text.Get("SelectAtLeastOneDuplicate"));
         }
 
         var selected = selectedPaths
@@ -148,7 +153,7 @@ public sealed class MediaDuplicateService
             .ToDictionary(file => file.Path, StringComparer.OrdinalIgnoreCase);
         if (selected.Any(path => !filesByPath.ContainsKey(path)))
         {
-            throw new ArgumentException("La selección contiene archivos que no pertenecen a los duplicados verificados.");
+            throw new ArgumentException(Text.Get("SelectionContainsUnverifiedFiles"));
         }
 
         var selectedByGroup = groups
@@ -162,11 +167,11 @@ public sealed class MediaDuplicateService
             .ToArray();
         if (selectedByGroup.Any(entry => entry.Retained.Length == 0))
         {
-            throw new InvalidOperationException("Debe conservarse al menos un archivo de cada grupo duplicado.");
+            throw new InvalidOperationException(Text.Get("KeepOneFilePerDuplicateGroup"));
         }
 
         using var log = new ActivityLog(LogPath);
-        log.Write($"Inicio del envío a la Papelera de reciclaje. Archivos seleccionados: {selected.Count}");
+        log.Write(Text.Format("StartingRecycleBinMove", selected.Count));
 
         var sentToRecycleBin = new List<string>();
         var changedSinceScan = 0;
@@ -182,8 +187,7 @@ public sealed class MediaDuplicateService
             {
                 changedSinceScan += entry.Selected.Length;
                 var message =
-                    $"[CONSERVADO] No se pudo volver a verificar una copia que debía conservarse: " +
-                    $"{entry.Retained[0].Path}. {retainedError}";
+                    Text.Format("CouldNotReverifyRetainedCopy", entry.Retained[0].Path, retainedError);
                 log.Write(message);
                 foreach (var file in entry.Selected)
                 {
@@ -199,7 +203,7 @@ public sealed class MediaDuplicateService
                     if (!TryOpenVerifiedFile(file, out var duplicateStream, out var duplicateError))
                     {
                         changedSinceScan++;
-                        var message = $"[CONSERVADO] El archivo ya no coincide con el escaneo: {file.Path}. {duplicateError}";
+                        var message = Text.Format("FileNoLongerMatchesScan", file.Path, duplicateError);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                         continue;
@@ -211,46 +215,46 @@ public sealed class MediaDuplicateService
                         _sendToRecycleBin(file.Path);
                         if (File.Exists(file.Path))
                         {
-                            throw new IOException("El archivo sigue presente después de enviarlo a la Papelera.");
+                            throw new IOException(Text.Get("FileRemainsAfterRecycleBin"));
                         }
 
                         sentToRecycleBin.Add(file.Path);
-                        var message = $"[PAPELERA] {file.Path}";
+                        var message = Text.Format("FileSentToRecycleBin", file.Path);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
                     catch (IOException exception)
                     {
                         errors++;
-                        var message = $"[ERROR] No se pudo enviar a la Papelera {file.Path}: {exception.Message}";
+                        var message = Text.Format("CannotSendFileToRecycleBin", file.Path, exception.Message);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
                     catch (UnauthorizedAccessException exception)
                     {
                         errors++;
-                        var message = $"[ERROR] Sin permiso para enviar a la Papelera {file.Path}: {exception.Message}";
+                        var message = Text.Format("NoPermissionSendingFileToRecycleBin", file.Path, exception.Message);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
                     catch (SecurityException exception)
                     {
                         errors++;
-                        var message = $"[ERROR] Acceso denegado al enviar a la Papelera {file.Path}: {exception.Message}";
+                        var message = Text.Format("AccessDeniedSendingFileToRecycleBin", file.Path, exception.Message);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
                     catch (InvalidOperationException exception)
                     {
                         errors++;
-                        var message = $"[ERROR] No se pudo enviar a la Papelera {file.Path}: {exception.Message}";
+                        var message = Text.Format("CannotSendFileToRecycleBin", file.Path, exception.Message);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
                     catch (NotSupportedException exception)
                     {
                         errors++;
-                        var message = $"[ERROR] No se pudo enviar a la Papelera {file.Path}: {exception.Message}";
+                        var message = Text.Format("CannotSendFileToRecycleBin", file.Path, exception.Message);
                         log.Write(message);
                         progress.Report(new OperationProgress(++processed, selected.Count, message));
                     }
@@ -259,13 +263,19 @@ public sealed class MediaDuplicateService
         }
 
         log.Write(
-            $"Fin del envío a la Papelera. Enviados: {sentToRecycleBin.Count} | " +
-            $"Cambiados desde el escaneo: {changedSinceScan} | Errores: {errors}");
+            Text.Format(
+                "RecycleBinMoveCompletedLog",
+                sentToRecycleBin.Count,
+                changedSinceScan,
+                errors));
         progress.Report(new OperationProgress(
             selected.Count,
             selected.Count,
-            $"Proceso finalizado: {sentToRecycleBin.Count} enviados a la Papelera, " +
-            $"{changedSinceScan} modificados y {errors} errores."));
+            Text.Format(
+                "RecycleBinMoveCompleted",
+                sentToRecycleBin.Count,
+                changedSinceScan,
+                errors)));
 
         return new MediaDuplicateRemovalSummary(sentToRecycleBin, changedSinceScan, errors);
     }
@@ -283,7 +293,7 @@ public sealed class MediaDuplicateService
             {
                 stream.Dispose();
                 stream = null;
-                error = "El contenido cambió desde el escaneo.";
+                error = Text.Get("ContentChangedSinceScan");
                 return false;
             }
 

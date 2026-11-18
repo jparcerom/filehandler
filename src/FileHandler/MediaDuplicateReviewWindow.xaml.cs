@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FileHandler.Localization;
 using FileHandler.Models;
 using FileHandler.Services;
 using Microsoft.Win32;
@@ -26,14 +27,14 @@ public partial class MediaDuplicateReviewWindow : Window
     {
         InitializeComponent();
         DuplicateFilesGrid.ItemsSource = _files;
-        LogPathTextBlock.Text = $"Los registros se guardan en: {_service.LogPath}";
+        LogPathTextBlock.Text = Text.Format("LogPath", _service.LogPath);
     }
 
     private async void SelectSource_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog
         {
-            Title = "Selecciona la carpeta para buscar imágenes y vídeos duplicados",
+            Title = Text.Get("SelectFolderForDuplicatesDialog"),
             Multiselect = false
         };
         if (dialog.ShowDialog(this) != true)
@@ -60,7 +61,7 @@ public partial class MediaDuplicateReviewWindow : Window
         ClearResults();
         ScanProgressBar.Value = 0;
         ScanProgressBar.IsIndeterminate = true;
-        StatusTextBlock.Text = "Escaneando imágenes y vídeos...";
+        StatusTextBlock.Text = Text.Get("ScanningImagesAndVideos");
         CountsTextBlock.Text = string.Empty;
         SummaryTextBlock.Text = string.Empty;
         _isBusy = true;
@@ -92,20 +93,27 @@ public partial class MediaDuplicateReviewWindow : Window
             DuplicateEmptyTextBlock.Visibility = _groups.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             CountsTextBlock.Text =
-                $"{scan.ImageCount} imágenes · {scan.VideoCount} vídeos · " +
-                $"{scan.DuplicateGroups.Count} grupos idénticos";
+                Text.Format(
+                    "DuplicateScanCounts",
+                    scan.ImageCount,
+                    Text.Get("Images"),
+                    scan.VideoCount,
+                    Text.Get("Videos"),
+                    scan.DuplicateGroups.Count);
             if (scan.ScanErrors > 0 || scan.VerificationErrors > 0)
             {
                 CountsTextBlock.Text +=
-                    $" · {scan.ScanErrors} errores de escaneo · {scan.VerificationErrors} errores de comparación";
+                    Text.Format(
+                        "DuplicateScanErrors",
+                        scan.ScanErrors,
+                        scan.VerificationErrors);
             }
 
             var selectedCount = _files.Count(file => file.IsSelectedForDeletion);
             SummaryTextBlock.Text = scan.DuplicateGroups.Count == 0
-                ? "No se encontraron archivos multimedia con contenido idéntico."
-                : $"Se han marcado automáticamente {selectedCount} copias para la Papelera. " +
-                  "Revisa la lista y desmarca las que quieras conservar. Se deja una copia sin marcar por grupo.";
-            StatusTextBlock.Text = "Búsqueda completada.";
+                ? Text.Get("NoIdenticalMediaFound")
+                : Text.Format("DuplicatesAutoSelectedSummary", selectedCount);
+            StatusTextBlock.Text = Text.Get("SearchCompleted");
 
             UpdateControls();
         }
@@ -166,10 +174,11 @@ public partial class MediaDuplicateReviewWindow : Window
 
         var confirmation = MessageBox.Show(
             this,
-            $"Se enviarán {selectedFiles.Length} archivos multimedia seleccionados a la Papelera de reciclaje. " +
-            $"Se conservará al menos una copia de cada grupo.{Environment.NewLine}{Environment.NewLine}" +
-            "La Papelera permite recuperarlos mientras no se vacíe. ¿Quieres continuar?",
-            "Confirmar eliminación de duplicados",
+            Text.Format(
+                "ConfirmDuplicateDeletion",
+                selectedFiles.Length,
+                Environment.NewLine),
+            Text.Get("ConfirmDuplicateDeletionTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
         if (confirmation != MessageBoxResult.Yes)
@@ -192,8 +201,11 @@ public partial class MediaDuplicateReviewWindow : Window
                 progress));
 
             var deletionSummary =
-                $"Enviados a la Papelera: {summary.SentToRecycleBin.Count} · " +
-                $"Modificados desde el escaneo: {summary.ChangedSinceScan} · Errores: {summary.Errors}.";
+                Text.Format(
+                    "DuplicateRemovalSummary",
+                    summary.SentToRecycleBin.Count,
+                    summary.ChangedSinceScan,
+                    summary.Errors);
             await ScanSourceAsync(scan.SourcePath);
             SummaryTextBlock.Text = string.IsNullOrEmpty(SummaryTextBlock.Text)
                 ? deletionSummary
@@ -255,9 +267,9 @@ public partial class MediaDuplicateReviewWindow : Window
         DeleteSelectedButton.IsEnabled =
             !_isBusy && _scan is not null && selectedCount > 0 && !invalidGroup;
         SelectionWarningTextBlock.Text = invalidGroup
-            ? "Deja al menos una copia sin marcar en cada grupo."
+            ? Text.Get("KeepOneCopyWarning")
             : selectedCount > 0
-                ? $"Hay {selectedCount} copias marcadas; queda al menos una sin marcar por grupo."
+                ? Text.Format("SelectedCopiesWarning", selectedCount)
                 : string.Empty;
         SelectionWarningBorder.Background = invalidGroup
             ? new SolidColorBrush(Color.FromRgb(185, 28, 28))
@@ -298,9 +310,9 @@ public partial class MediaDuplicateReviewWindow : Window
     private void ShowOperationError(string message)
     {
         ScanProgressBar.IsIndeterminate = false;
-        StatusTextBlock.Text = $"La operación no pudo completarse: {message}";
+        StatusTextBlock.Text = Text.Format("OperationFailed", message);
         ActivityLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
-        MessageBox.Show(this, message, "Error al buscar duplicados", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(this, message, Text.Get("FindDuplicatesErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private void ClearResults()
@@ -321,7 +333,7 @@ public partial class MediaDuplicateReviewWindow : Window
     {
         if (!size.HasValue)
         {
-            return "No disponible";
+            return Text.Get("NotAvailable");
         }
 
         var value = (double)size.Value;
@@ -343,9 +355,12 @@ public partial class MediaDuplicateReviewWindow : Window
             Group = group;
             Files = new ObservableCollection<DuplicateFileRow>();
             var repeatedBytes = (decimal)group.Size * (group.Files.Count - 1);
-            DisplayText = $"{group.Files.Count} archivos idénticos · {FormatSize((long)Math.Min(repeatedBytes, long.MaxValue))} repetidos";
-            HashPreview = $"SHA-256 {group.Sha256[..12]}...";
-            GroupHeaderText = $"{DisplayText} · {HashPreview}";
+            DisplayText = Text.Format(
+                "DuplicateGroupSummary",
+                group.Files.Count,
+                FormatSize((long)Math.Min(repeatedBytes, long.MaxValue)));
+            HashPreview = Text.Format("Sha256Preview", group.Sha256[..12]);
+            GroupHeaderText = Text.Format("DuplicateGroupHeader", DisplayText, HashPreview);
         }
 
         public MediaDuplicateGroup Group { get; }
@@ -378,8 +393,8 @@ public partial class MediaDuplicateReviewWindow : Window
         public string GroupHeaderText { get; }
         public string Path => File.Path;
         public string SizeText => FormatSize(File.Size);
-        public string TypeText => File.IsImage ? "Imagen" : "Vídeo";
-        public string TypeIcon => File.IsImage ? "FOTO" : "VÍDEO";
+        public string TypeText => Text.Get(File.IsImage ? "ImageType" : "VideoType");
+        public string TypeIcon => Text.Get(File.IsImage ? "PhotoIcon" : "VideoIcon");
 
         public bool IsGroupSelectionInvalid
         {

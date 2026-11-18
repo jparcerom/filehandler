@@ -1,6 +1,7 @@
 <Window x:Class="FileHandler.SplashWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:FileHandler.Localization"
         Title="FileHandler"
         Width="480"
         Height="280"
@@ -53,7 +54,7 @@
                          BorderThickness="0" />
 
             <TextBlock Grid.Row="3"
-                       Text="© jpmDevelope"
+                       Text="{loc:Translate Key=SplashCopyright}"
                        Margin="0,0,0,22"
                        FontSize="12"
                        Foreground="#6B7280"

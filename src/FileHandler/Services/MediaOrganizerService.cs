@@ -1,6 +1,7 @@
 using System.IO;
 using System.Security;
 using System.Security.Cryptography;
+using FileHandler.Localization;
 using FileHandler.Models;
 
 namespace FileHandler.Services;
@@ -34,21 +35,24 @@ public sealed class MediaOrganizerService
         var total = images.Count + videos.Count;
         if (total == 0)
         {
-            throw new InvalidOperationException("No hay archivos multimedia seleccionados para organizar.");
+            throw new InvalidOperationException(Text.Get("NoMediaSelectedToOrganize"));
         }
 
         var normalizedImageDestination = images.Count > 0
-            ? ValidateDestination(scan.SourcePath, imageDestination, "imágenes")
+            ? ValidateDestination(scan.SourcePath, imageDestination, Text.Get("Images"))
             : null;
         var normalizedVideoDestination = videos.Count > 0
-            ? ValidateDestination(scan.SourcePath, videoDestination, "vídeos")
+            ? ValidateDestination(scan.SourcePath, videoDestination, Text.Get("Videos"))
             : null;
 
         using var log = new ActivityLog(LogPath);
         log.Write(
-            $"Inicio de organización multimedia. Imágenes: {images.Count} | Vídeos: {videos.Count} | " +
-            $"Destino de imágenes: {normalizedImageDestination ?? "(no seleccionado)"} | " +
-            $"Destino de vídeos: {normalizedVideoDestination ?? "(no seleccionado)"}");
+            Text.Format(
+                "StartingMediaOrganizationLog",
+                images.Count,
+                videos.Count,
+                normalizedImageDestination ?? Text.Get("NotSelected"),
+                normalizedVideoDestination ?? Text.Get("NotSelected")));
 
         try
         {
@@ -64,17 +68,17 @@ public sealed class MediaOrganizerService
         }
         catch (IOException exception)
         {
-            log.Write($"[ERROR] No se pudieron preparar los destinos: {exception.Message}");
+            log.Write(Text.Format("CannotPrepareDestinations", exception.Message));
             throw;
         }
         catch (UnauthorizedAccessException exception)
         {
-            log.Write($"[ERROR] Sin permiso para preparar los destinos: {exception.Message}");
+            log.Write(Text.Format("NoPermissionPreparingDestinations", exception.Message));
             throw;
         }
         catch (SecurityException exception)
         {
-            log.Write($"[ERROR] Acceso denegado al preparar los destinos: {exception.Message}");
+            log.Write(Text.Format("AccessDeniedPreparingDestinations", exception.Message));
             throw;
         }
 
@@ -95,7 +99,7 @@ public sealed class MediaOrganizerService
             {
                 if (!File.Exists(file.SourcePath))
                 {
-                    throw new FileNotFoundException("El archivo de origen ya no existe.", file.SourcePath);
+                    throw new FileNotFoundException(Text.Get("SourceFileNoLongerExists"), file.SourcePath);
                 }
 
                 var creationDate = File.GetCreationTime(file.SourcePath);
@@ -109,7 +113,7 @@ public sealed class MediaOrganizerService
                 if (PathsEqual(file.SourcePath, desiredPath))
                 {
                     alreadyOrganized++;
-                    var existingMessage = $"[YA ORGANIZADO] {file.SourcePath}";
+                    var existingMessage = Text.Format("FileAlreadyOrganized", file.SourcePath);
                     log.Write(existingMessage);
                     progress.Report(new OperationProgress(index + 1, total, existingMessage));
                     continue;
@@ -120,7 +124,7 @@ public sealed class MediaOrganizerService
                 if (!PathsEqual(finalPath, desiredPath))
                 {
                     collisionRenames++;
-                    log.Write($"[COLISIÓN] Se conservó el elemento existente y se renombró el entrante: {finalPath}");
+                    log.Write(Text.Format("CollisionRenamedIncoming", finalPath));
                 }
 
                 if (file.IsImage)
@@ -132,28 +136,28 @@ public sealed class MediaOrganizerService
                     videosMoved++;
                 }
 
-                var movedMessage = $"[MOVIDO] {file.SourcePath} -> {finalPath}";
+                var movedMessage = Text.Format("FileMoved", file.SourcePath, finalPath);
                 log.Write(movedMessage);
                 progress.Report(new OperationProgress(index + 1, total, movedMessage));
             }
             catch (IOException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] No se pudo organizar {file.SourcePath}: {exception.Message}";
+                var errorMessage = Text.Format("CannotOrganizeFile", file.SourcePath, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(index + 1, total, errorMessage));
             }
             catch (UnauthorizedAccessException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] Sin permiso para organizar {file.SourcePath}: {exception.Message}";
+                var errorMessage = Text.Format("NoPermissionOrganizingFile", file.SourcePath, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(index + 1, total, errorMessage));
             }
             catch (SecurityException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] Acceso denegado al organizar {file.SourcePath}: {exception.Message}";
+                var errorMessage = Text.Format("AccessDeniedOrganizingFile", file.SourcePath, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(index + 1, total, errorMessage));
             }
@@ -169,15 +173,25 @@ public sealed class MediaOrganizerService
             errors,
             scan.Errors);
         log.Write(
-            $"Fin de organización multimedia. Imágenes movidas: {summary.ImagesMoved}/{summary.ImagesToOrganize} | " +
-            $"Vídeos movidos: {summary.VideosMoved}/{summary.VideosToOrganize} | " +
-            $"Renombrados por colisión: {summary.CollisionRenames} | Ya organizados: {summary.AlreadyOrganized} | " +
-            $"Errores de escaneo: {summary.ScanErrors} | Errores de movimiento: {summary.Errors}");
+            Text.Format(
+                "MediaOrganizationCompletedLog",
+                summary.ImagesMoved,
+                summary.ImagesToOrganize,
+                summary.VideosMoved,
+                summary.VideosToOrganize,
+                summary.CollisionRenames,
+                summary.AlreadyOrganized,
+                summary.ScanErrors,
+                summary.Errors));
         progress.Report(new OperationProgress(
             total,
             total,
-            $"Organización finalizada: {summary.ImagesMoved} imágenes y {summary.VideosMoved} vídeos movidos; " +
-            $"{summary.CollisionRenames} colisiones y {summary.Errors} errores."));
+            Text.Format(
+                "MediaOrganizationCompleted",
+                summary.ImagesMoved,
+                summary.VideosMoved,
+                summary.CollisionRenames,
+                summary.Errors)));
         return summary;
     }
 
@@ -185,13 +199,13 @@ public sealed class MediaOrganizerService
     {
         if (string.IsNullOrWhiteSpace(destination))
         {
-            throw new ArgumentException($"Selecciona un destino para los archivos de {fileType}.");
+            throw new ArgumentException(Text.Format("SelectDestinationForType", fileType));
         }
 
         var destinationPath = Path.GetFullPath(destination);
         if (FileTreeScanner.IsSameOrDescendant(destinationPath, source))
         {
-            throw new ArgumentException($"El destino de {fileType} no puede ser el origen ni estar dentro de él.");
+            throw new ArgumentException(Text.Format("DestinationCannotBeSourceOrInside", fileType));
         }
 
         return destinationPath;
@@ -216,12 +230,12 @@ public sealed class MediaOrganizerService
             }
             catch (IOException exception)
             {
-                log($"[REINTENTO SEGURO] No se pudo mover directamente {source}: {exception.Message}");
+                log(Text.Format("SafeMoveRetry", source, exception.Message));
             }
         }
         else
         {
-            log($"[MOVIMIENTO ENTRE VOLÚMENES] Se verificará la copia antes de borrar {source}.");
+            log(Text.Format("CrossVolumeCopyWillBeVerified", source));
         }
 
         var fallbackDestination = UniqueDestinationPath.GetAvailablePath(destinationDirectory, fileName);
@@ -232,19 +246,19 @@ public sealed class MediaOrganizerService
         catch (IOException exception)
         {
             throw new IOException(
-                $"No se pudo crear la copia en {fallbackDestination}; se conservó el origen. {exception.Message}",
+                Text.Format("CopyFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
         catch (UnauthorizedAccessException exception)
         {
             throw new UnauthorizedAccessException(
-                $"No se pudo crear la copia en {fallbackDestination}; se conservó el origen. {exception.Message}",
+                Text.Format("CopyFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
         catch (SecurityException exception)
         {
             throw new SecurityException(
-                $"No se pudo crear la copia en {fallbackDestination}; se conservó el origen. {exception.Message}",
+                Text.Format("CopyFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
 
@@ -258,30 +272,26 @@ public sealed class MediaOrganizerService
         catch (IOException exception)
         {
             throw new IOException(
-                $"No se pudo verificar por SHA-256 la copia en {fallbackDestination}; se conservó el origen. " +
-                exception.Message,
+                Text.Format("CopyVerificationFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
         catch (UnauthorizedAccessException exception)
         {
             throw new UnauthorizedAccessException(
-                $"No se pudo verificar por SHA-256 la copia en {fallbackDestination}; se conservó el origen. " +
-                exception.Message,
+                Text.Format("CopyVerificationFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
         catch (SecurityException exception)
         {
             throw new SecurityException(
-                $"No se pudo verificar por SHA-256 la copia en {fallbackDestination}; se conservó el origen. " +
-                exception.Message,
+                Text.Format("CopyVerificationFailedSourceRetained", fallbackDestination, exception.Message),
                 exception);
         }
 
         if (!string.Equals(sourceHash, destinationHash, StringComparison.Ordinal))
         {
             throw new IOException(
-                $"La copia de seguridad de {source} no coincide por SHA-256; se conservaron el origen y la copia en " +
-                $"{fallbackDestination}.");
+                Text.Format("CopyHashMismatchBothKept", source, fallbackDestination));
         }
 
         try
@@ -291,26 +301,23 @@ public sealed class MediaOrganizerService
         catch (IOException exception)
         {
             throw new IOException(
-                $"La copia verificada se conservó en {fallbackDestination}, pero no se pudo eliminar el origen " +
-                $"{source}. {exception.Message}",
+                Text.Format("VerifiedCopySourceCouldNotBeRemoved", fallbackDestination, source, exception.Message),
                 exception);
         }
         catch (UnauthorizedAccessException exception)
         {
             throw new UnauthorizedAccessException(
-                $"La copia verificada se conservó en {fallbackDestination}, pero no se pudo eliminar el origen " +
-                $"{source}. {exception.Message}",
+                Text.Format("VerifiedCopySourceCouldNotBeRemoved", fallbackDestination, source, exception.Message),
                 exception);
         }
         catch (SecurityException exception)
         {
             throw new SecurityException(
-                $"La copia verificada se conservó en {fallbackDestination}, pero no se pudo eliminar el origen " +
-                $"{source}. {exception.Message}",
+                Text.Format("VerifiedCopySourceCouldNotBeRemoved", fallbackDestination, source, exception.Message),
                 exception);
         }
 
-        log($"[COPIA VERIFICADA] Se eliminó el origen solo tras verificar SHA-256: {fallbackDestination}");
+        log(Text.Format("SourceDeletedAfterShaVerification", fallbackDestination));
         return fallbackDestination;
     }
 

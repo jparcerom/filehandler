@@ -1,5 +1,6 @@
 using System.IO;
 using System.Security;
+using FileHandler.Localization;
 using FileHandler.Models;
 
 namespace FileHandler.Services;
@@ -21,23 +22,26 @@ public sealed class SubfolderFileService
         var sourcePath = Path.GetFullPath(source);
         if (!Directory.Exists(sourcePath))
         {
-            throw new DirectoryNotFoundException($"No existe la carpeta de origen: {sourcePath}");
+            throw new DirectoryNotFoundException(Text.Format("SourceFolderNotFound", sourcePath));
         }
 
         using var log = new ActivityLog(LogPath);
-        log.Write($"Inicio del escaneo de archivos en subcarpetas. Origen: {sourcePath}");
+        log.Write(Text.Format("StartingSubfolderScan", sourcePath));
         var scan = _scanner.Scan(sourcePath, excludedPath: null, progress, log.Write);
         var files = scan.Files
             .Where(file => !PathsEqual(Path.GetDirectoryName(file)!, sourcePath))
             .ToArray();
 
         log.Write(
-            $"Escaneo finalizado. Archivos en subcarpetas: {files.Length} | " +
-            $"Subcarpetas: {scan.SubdirectoryCount} | Errores: {scan.Errors}");
+            Text.Format(
+                "SubfolderScanCompletedLog",
+                files.Length,
+                scan.SubdirectoryCount,
+                scan.Errors));
         progress.Report(new OperationProgress(
             files.Length,
             files.Length,
-            $"Escaneo finalizado: {files.Length} archivos en subcarpetas."));
+            Text.Format("SubfolderScanCompleted", files.Length)));
 
         return new SubfolderFileScanResult(sourcePath, files, scan.Errors);
     }
@@ -49,14 +53,13 @@ public sealed class SubfolderFileService
     {
         if (scan.Files.Count == 0)
         {
-            throw new InvalidOperationException("No hay archivos en subcarpetas para mover.");
+            throw new InvalidOperationException(Text.Get("NoSubfolderFilesToMove"));
         }
 
         var destinationPath = Path.GetFullPath(destination);
         using var log = new ActivityLog(LogPath);
         log.Write(
-            $"Inicio del movimiento a la raíz del destino. Archivos: {scan.Files.Count} | " +
-            $"Destino: {destinationPath}");
+            Text.Format("StartingSubfolderMove", scan.Files.Count, destinationPath));
 
         try
         {
@@ -64,17 +67,17 @@ public sealed class SubfolderFileService
         }
         catch (IOException exception)
         {
-            log.Write($"[ERROR] No se pudo preparar el destino: {exception.Message}");
+            log.Write(Text.Format("CannotPrepareDestination", exception.Message));
             throw;
         }
         catch (UnauthorizedAccessException exception)
         {
-            log.Write($"[ERROR] Sin permiso para preparar el destino: {exception.Message}");
+            log.Write(Text.Format("NoPermissionPreparingDestination", exception.Message));
             throw;
         }
         catch (SecurityException exception)
         {
-            log.Write($"[ERROR] Acceso denegado al preparar el destino: {exception.Message}");
+            log.Write(Text.Format("AccessDeniedPreparingDestination", exception.Message));
             throw;
         }
 
@@ -90,7 +93,7 @@ public sealed class SubfolderFileService
             if (PathsEqual(Path.GetDirectoryName(sourceFile)!, destinationPath))
             {
                 alreadyAtDestination++;
-                var existingMessage = $"[OMITIDO] El archivo ya está en la raíz del destino: {sourceFile}";
+                var existingMessage = Text.Format("FileAlreadyAtDestinationRoot", sourceFile);
                 log.Write(existingMessage);
                 progress.Report(new OperationProgress(++processed, total, existingMessage));
                 continue;
@@ -107,31 +110,31 @@ public sealed class SubfolderFileService
                 if (hasCollision)
                 {
                     collisionRenames++;
-                    log.Write($"[COLISIÓN] Se conservó el elemento existente y se renombró el entrante: {target}");
+                    log.Write(Text.Format("CollisionRenamedIncoming", target));
                 }
 
-                var movedMessage = $"[MOVIDO] {sourceFile} -> {target}";
+                var movedMessage = Text.Format("FileMoved", sourceFile, target);
                 log.Write(movedMessage);
                 progress.Report(new OperationProgress(++processed, total, movedMessage));
             }
             catch (IOException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] No se pudo mover {sourceFile}: {exception.Message}";
+                var errorMessage = Text.Format("CannotMoveFile", sourceFile, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(++processed, total, errorMessage));
             }
             catch (UnauthorizedAccessException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] Sin permiso para mover {sourceFile}: {exception.Message}";
+                var errorMessage = Text.Format("NoPermissionMovingFile", sourceFile, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(++processed, total, errorMessage));
             }
             catch (SecurityException exception)
             {
                 errors++;
-                var errorMessage = $"[ERROR] Acceso denegado al mover {sourceFile}: {exception.Message}";
+                var errorMessage = Text.Format("AccessDeniedMovingFile", sourceFile, exception.Message);
                 log.Write(errorMessage);
                 progress.Report(new OperationProgress(++processed, total, errorMessage));
             }
@@ -145,14 +148,22 @@ public sealed class SubfolderFileService
             errors,
             scan.ScanErrors);
         log.Write(
-            $"Fin del movimiento. Encontrados: {summary.FilesFound} | Movidos: {summary.Moved} | " +
-            $"Renombrados por colisión: {summary.CollisionRenames} | Ya en destino: {summary.AlreadyAtDestination} | " +
-            $"Errores de escaneo: {summary.ScanErrors} | Errores de movimiento: {summary.Errors}");
+            Text.Format(
+                "SubfolderMoveCompletedLog",
+                summary.FilesFound,
+                summary.Moved,
+                summary.CollisionRenames,
+                summary.AlreadyAtDestination,
+                summary.ScanErrors,
+                summary.Errors));
         progress.Report(new OperationProgress(
             total,
             total,
-            $"Movimiento finalizado: {summary.Moved} movidos, {summary.AlreadyAtDestination} ya en destino, " +
-            $"{summary.Errors} errores."));
+            Text.Format(
+                "SubfolderMoveCompleted",
+                summary.Moved,
+                summary.AlreadyAtDestination,
+                summary.Errors)));
         return summary;
     }
 

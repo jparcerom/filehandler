@@ -80,6 +80,13 @@ Verificación de las mejoras visuales: compilación Release sin advertencias ni 
 - La instalación y desinstalación silenciosas del instalador se probaron en una ubicación temporal, sin elevación ni inicio de la aplicación.
 - El compilador de Inno Setup terminó sin advertencias. El instalador no está firmado digitalmente.
 
+### 8. Localización español-inglés — completado
+- La aplicación presenta todos los textos de las ventanas, confirmaciones, errores y mensajes de actividad en español o inglés.
+- El instalador permite elegir idioma y conserva la selección para los siguientes inicios; el portable detecta el idioma preferido de Windows y usa español si no está disponible.
+- Las carpetas mensuales se generan como `NN-Mes` en el idioma elegido. Las carpetas existentes no se renombran.
+
+Verificación: 36 pruebas superadas; cobertura de claves en ambos idiomas; instalación y desinstalación silenciosas comprobadas temporalmente con las opciones inglesa y española.
+
 ## Criterios comunes de cierre
 
 - Los procesos largos informan de su avance y dejan un registro legible.

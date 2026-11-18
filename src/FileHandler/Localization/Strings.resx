@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MainWindowTitle" xml:space="preserve"><value>FileHandler 2.0</value></data>
+  <data name="MainSubtitle" xml:space="preserve"><value>Versión 2.0 · Organización de archivos multimedia</value></data>
+  <data name="HomeQuestion" xml:space="preserve"><value>¿Qué quieres hacer?</value></data>
+  <data name="HomeInstruction" xml:space="preserve"><value>Selecciona una operación para configurar sus carpetas y opciones.</value></data>
+  <data name="OrganizeTitle" xml:space="preserve"><value>Organizar archivos multimedia</value></data>
+  <data name="OrganizeDescription" xml:space="preserve"><value>Selecciona la carpeta de tus fotografías y vídeos para organizarlos por año y mes y crear tu archivo cronológico. Puedes separar los vídeos de las imágenes o guardarlo todo en una misma carpeta.</value></data>
+  <data name="DuplicatesTitle" xml:space="preserve"><value>Buscar duplicados multimedia</value></data>
+  <data name="DuplicatesDescription" xml:space="preserve"><value>Encuentra fotos y vídeos con contenido idéntico, revísalos y envía los seleccionados a la Papelera.</value></data>
+  <data name="ExtractTitle" xml:space="preserve"><value>Sacar archivos de subcarpetas</value></data>
+  <data name="ExtractDescription" xml:space="preserve"><value>Reunir los archivos en la raíz de una carpeta de destino.</value></data>
+  <data name="BackToOperations" xml:space="preserve"><value>← Todas las operaciones</value></data>
+  <data name="OrganizerDescription" xml:space="preserve"><value>Elige imágenes, vídeos o ambos. Se moverán a carpetas de año y mes usando la fecha más antigua entre creación y modificación.</value></data>
+  <data name="SourceFolder" xml:space="preserve"><value>Carpeta de origen</value></data>
+  <data name="SelectFolder" xml:space="preserve"><value>Seleccionar...</value></data>
+  <data name="SelectSourceToScan" xml:space="preserve"><value>Selecciona la carpeta de origen para escanearla.</value></data>
+  <data name="OrganizeImages" xml:space="preserve"><value>Organizar imágenes</value></data>
+  <data name="ImageDestination" xml:space="preserve"><value>Destino de imágenes</value></data>
+  <data name="OrganizeVideos" xml:space="preserve"><value>Organizar vídeos</value></data>
+  <data name="VideoDestination" xml:space="preserve"><value>Destino de vídeos</value></data>
+  <data name="OrganizeSelection" xml:space="preserve"><value>Organizar selección</value></data>
+  <data name="ActivityLog" xml:space="preserve"><value>Registro de actividad</value></data>
+  <data name="SubfolderDescription" xml:space="preserve"><value>Mueve a la raíz del destino todos los archivos encontrados en subcarpetas. Los archivos que ya estén en la raíz del origen no se modifican. Si hay colisión, el entrante siempre recibe un sufijo incremental, aunque el contenido sea idéntico.</value></data>
+  <data name="SelectSourceToSearchSubfolders" xml:space="preserve"><value>Selecciona la carpeta de origen para buscar archivos en sus subcarpetas.</value></data>
+  <data name="DestinationFolder" xml:space="preserve"><value>Carpeta de destino</value></data>
+  <data name="MoveFilesToDestinationRoot" xml:space="preserve"><value>Mover archivos a la raíz del destino</value></data>
+  <data name="DuplicateWindowTitle" xml:space="preserve"><value>Buscar duplicados multimedia</value></data>
+  <data name="DuplicateExplanation" xml:space="preserve"><value>Se comparan imágenes y vídeos por tamaño y SHA-256. Las copias repetidas se marcan automáticamente, dejando una copia sin marcar por grupo.</value></data>
+  <data name="SelectFolderAndScan" xml:space="preserve"><value>Seleccionar carpeta y buscar</value></data>
+  <data name="SearchAgain" xml:space="preserve"><value>Buscar de nuevo</value></data>
+  <data name="SelectFolderForDuplicates" xml:space="preserve"><value>Selecciona una carpeta para buscar duplicados.</value></data>
+  <data name="NoResultsYet" xml:space="preserve"><value>Todavía no hay resultados. Selecciona una carpeta para iniciar la búsqueda.</value></data>
+  <data name="TrashColumn" xml:space="preserve"><value>Enviar a papelera</value></data>
+  <data name="IdenticalGroupColumn" xml:space="preserve"><value>Grupo idéntico</value></data>
+  <data name="PreviewColumn" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="FileColumn" xml:space="preserve"><value>Archivo</value></data>
+  <data name="SizeColumn" xml:space="preserve"><value>Tamaño</value></data>
+  <data name="TypeColumn" xml:space="preserve"><value>Tipo</value></data>
+  <data name="SendSelectionToRecycleBin" xml:space="preserve"><value>Enviar selección a la Papelera</value></data>
+  <data name="SplashVersion" xml:space="preserve"><value>Versión {0}</value></data>
+  <data name="SplashCopyright" xml:space="preserve"><value>© jpmDevelope</value></data>
+  <data name="LogPath" xml:space="preserve"><value>Los registros se guardan en: {0}</value></data>
+  <data name="EmailOpenFailed" xml:space="preserve"><value>No se pudo abrir el enlace de correo: {0}</value></data>
+  <data name="EmailErrorTitle" xml:space="preserve"><value>No se pudo abrir el correo</value></data>
+  <data name="SelectSourceFolder" xml:space="preserve"><value>Selecciona la carpeta de origen</value></data>
+  <data name="ScanningSubfolderFiles" xml:space="preserve"><value>Escaneando archivos en subcarpetas...</value></data>
+  <data name="SubfolderFilesFound" xml:space="preserve"><value>{0} archivos encontrados en subcarpetas</value></data>
+  <data name="ScanErrorsSuffix" xml:space="preserve"><value> · {0} errores de escaneo</value></data>
+  <data name="NoSubfolderFilesToMove" xml:space="preserve"><value>No hay archivos en subcarpetas para mover.</value></data>
+  <data name="SelectDestinationFolder" xml:space="preserve"><value>Selecciona la carpeta de destino</value></data>
+  <data name="ConfirmMoveSubfolderFiles" xml:space="preserve"><value>Se intentarán mover {0} archivos encontrados en subcarpetas a la raíz del destino. Los archivos que ya estén en la raíz del origen o del destino se conservarán.{1}{1}Ante cualquier colisión se conservarán ambos archivos y el entrante recibirá un sufijo incremental, incluso si su contenido es idéntico. ¿Quieres continuar?</value></data>
+  <data name="ConfirmExtractTitle" xml:space="preserve"><value>Confirmar extracción de archivos</value></data>
+  <data name="SubfolderMoveSummary" xml:space="preserve"><value>Encontrados: {0} · Movidos: {1} · Renombrados por colisión: {2} · Ya en destino: {3} · Errores de escaneo/movimiento: {4}/{5}.</value></data>
+  <data name="OperationFailed" xml:space="preserve"><value>La operación no pudo completarse: {0}</value></data>
+  <data name="ExtractFilesErrorTitle" xml:space="preserve"><value>Error al extraer archivos</value></data>
+  <data name="SelectMediaSource" xml:space="preserve"><value>Selecciona la carpeta de origen multimedia</value></data>
+  <data name="ScanningMedia" xml:space="preserve"><value>Escaneando imágenes y vídeos...</value></data>
+  <data name="MediaScanCounts" xml:space="preserve"><value>{0} {1} · {2} {3} · {4} subcarpetas</value></data>
+  <data name="NoCompatibleMedia" xml:space="preserve"><value>No se encontraron imágenes ni vídeos compatibles.</value></data>
+  <data name="SelectImageDestination" xml:space="preserve"><value>Selecciona el destino de las imágenes</value></data>
+  <data name="SelectVideoDestination" xml:space="preserve"><value>Selecciona el destino de los vídeos</value></data>
+  <data name="SelectedMediaItem" xml:space="preserve"><value>{0} {1} → {2}</value></data>
+  <data name="ConfirmMediaOrganization" xml:space="preserve"><value>Se moverán estos archivos a carpetas Año/Mes:{0}{0}{1}{0}{0}Los nombres en conflicto recibirán un sufijo incremental. Si el movimiento entre volúmenes no es posible, se copiará y verificará por SHA-256 antes de borrar el origen. ¿Quieres continuar?</value></data>
+  <data name="ConfirmMediaOrganizationTitle" xml:space="preserve"><value>Confirmar organización multimedia</value></data>
+  <data name="MediaOrganizationSummary" xml:space="preserve"><value>Movidos: {0}/{1} {2} · {3}/{4} {5} · Renombrados por colisión: {6} · Ya organizados: {7} · Errores de escaneo/movimiento: {8}/{9}.</value></data>
+  <data name="OrganizeMediaErrorTitle" xml:space="preserve"><value>Error al organizar multimedia</value></data>
+  <data name="SelectFolderForDuplicatesDialog" xml:space="preserve"><value>Selecciona la carpeta para buscar imágenes y vídeos duplicados</value></data>
+  <data name="ScanningImagesAndVideos" xml:space="preserve"><value>Escaneando imágenes y vídeos...</value></data>
+  <data name="DuplicateScanCounts" xml:space="preserve"><value>{0} {1} · {2} {3} · {4} grupos idénticos</value></data>
+  <data name="DuplicateScanErrors" xml:space="preserve"><value> · {0} errores de escaneo · {1} errores de comparación</value></data>
+  <data name="NoIdenticalMediaFound" xml:space="preserve"><value>No se encontraron archivos multimedia con contenido idéntico.</value></data>
+  <data name="DuplicatesAutoSelectedSummary" xml:space="preserve"><value>Se han marcado automáticamente {0} copias para la Papelera. Revisa la lista y desmarca las que quieras conservar. Se deja una copia sin marcar por grupo.</value></data>
+  <data name="SearchCompleted" xml:space="preserve"><value>Búsqueda completada.</value></data>
+  <data name="ConfirmDuplicateDeletion" xml:space="preserve"><value>Se enviarán {0} archivos multimedia seleccionados a la Papelera de reciclaje. Se conservará al menos una copia de cada grupo.{1}{1}La Papelera permite recuperarlos mientras no se vacíe. ¿Quieres continuar?</value></data>
+  <data name="ConfirmDuplicateDeletionTitle" xml:space="preserve"><value>Confirmar eliminación de duplicados</value></data>
+  <data name="DuplicateRemovalSummary" xml:space="preserve"><value>Enviados a la Papelera: {0} · Modificados desde el escaneo: {1} · Errores: {2}.</value></data>
+  <data name="KeepOneCopyWarning" xml:space="preserve"><value>Deja al menos una copia sin marcar en cada grupo.</value></data>
+  <data name="SelectedCopiesWarning" xml:space="preserve"><value>Hay {0} copias marcadas; queda al menos una sin marcar por grupo.</value></data>
+  <data name="FindDuplicatesErrorTitle" xml:space="preserve"><value>Error al buscar duplicados</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>No disponible</value></data>
+  <data name="DuplicateGroupSummary" xml:space="preserve"><value>{0} archivos idénticos · {1} repetidos</value></data>
+  <data name="Sha256Preview" xml:space="preserve"><value>SHA-256 {0}...</value></data>
+  <data name="DuplicateGroupHeader" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="ImageType" xml:space="preserve"><value>Imagen</value></data>
+  <data name="VideoType" xml:space="preserve"><value>Vídeo</value></data>
+  <data name="PhotoIcon" xml:space="preserve"><value>FOTO</value></data>
+  <data name="VideoIcon" xml:space="preserve"><value>VÍDEO</value></data>
+  <data name="Images" xml:space="preserve"><value>imágenes</value></data>
+  <data name="Videos" xml:space="preserve"><value>vídeos</value></data>
+  <data name="NotSelected" xml:space="preserve"><value>(no seleccionado)</value></data>
+  <data name="ScanningFolderProgress" xml:space="preserve"><value>Escaneando {0} · {1} archivos encontrados.</value></data>
+  <data name="CannotEnumerateFolder" xml:space="preserve"><value>[ERROR] No se pudo recorrer {0}: {1}</value></data>
+  <data name="NoPermissionEnumeratingFolder" xml:space="preserve"><value>[ERROR] Sin permiso para recorrer {0}: {1}</value></data>
+  <data name="AccessDeniedEnumeratingFolder" xml:space="preserve"><value>[ERROR] Acceso denegado al recorrer {0}: {1}</value></data>
+  <data name="SkippedFolderLink" xml:space="preserve"><value>[OMITIDO] No se recorrió el enlace de carpeta: {0}</value></data>
+  <data name="CannotReadFolder" xml:space="preserve"><value>[ERROR] No se pudo leer la carpeta {0}: {1}</value></data>
+  <data name="NoPermissionReadingFolder" xml:space="preserve"><value>[ERROR] Sin permiso para leer la carpeta {0}: {1}</value></data>
+  <data name="AccessDeniedReadingFolder" xml:space="preserve"><value>[ERROR] Acceso denegado al leer la carpeta {0}: {1}</value></data>
+  <data name="CannotEnumerateSubfolders" xml:space="preserve"><value>[ERROR] No se pudieron enumerar las subcarpetas de {0}: {1}</value></data>
+  <data name="NoPermissionEnumeratingSubfolders" xml:space="preserve"><value>[ERROR] Sin permiso para enumerar las subcarpetas de {0}: {1}</value></data>
+  <data name="AccessDeniedEnumeratingSubfolders" xml:space="preserve"><value>[ERROR] Acceso denegado al enumerar las subcarpetas de {0}: {1}</value></data>
+  <data name="SourceFolderNotFound" xml:space="preserve"><value>No existe la carpeta de origen: {0}</value></data>
+  <data name="StartingSubfolderScan" xml:space="preserve"><value>Inicio del escaneo de archivos en subcarpetas. Origen: {0}</value></data>
+  <data name="SubfolderScanCompletedLog" xml:space="preserve"><value>Escaneo finalizado. Archivos en subcarpetas: {0} | Subcarpetas: {1} | Errores: {2}</value></data>
+  <data name="SubfolderScanCompleted" xml:space="preserve"><value>Escaneo finalizado: {0} archivos en subcarpetas.</value></data>
+  <data name="StartingSubfolderMove" xml:space="preserve"><value>Inicio del movimiento a la raíz del destino. Archivos: {0} | Destino: {1}</value></data>
+  <data name="CannotPrepareDestination" xml:space="preserve"><value>[ERROR] No se pudo preparar el destino: {0}</value></data>
+  <data name="NoPermissionPreparingDestination" xml:space="preserve"><value>[ERROR] Sin permiso para preparar el destino: {0}</value></data>
+  <data name="AccessDeniedPreparingDestination" xml:space="preserve"><value>[ERROR] Acceso denegado al preparar el destino: {0}</value></data>
+  <data name="FileAlreadyAtDestinationRoot" xml:space="preserve"><value>[OMITIDO] El archivo ya está en la raíz del destino: {0}</value></data>
+  <data name="CollisionRenamedIncoming" xml:space="preserve"><value>[COLISIÓN] Se conservó el elemento existente y se renombró el entrante: {0}</value></data>
+  <data name="FileMoved" xml:space="preserve"><value>[MOVIDO] {0} → {1}</value></data>
+  <data name="CannotMoveFile" xml:space="preserve"><value>[ERROR] No se pudo mover {0}: {1}</value></data>
+  <data name="NoPermissionMovingFile" xml:space="preserve"><value>[ERROR] Sin permiso para mover {0}: {1}</value></data>
+  <data name="AccessDeniedMovingFile" xml:space="preserve"><value>[ERROR] Acceso denegado al mover {0}: {1}</value></data>
+  <data name="SubfolderMoveCompletedLog" xml:space="preserve"><value>Fin del movimiento. Encontrados: {0} | Movidos: {1} | Renombrados por colisión: {2} | Ya en destino: {3} | Errores de escaneo: {4} | Errores de movimiento: {5}</value></data>
+  <data name="SubfolderMoveCompleted" xml:space="preserve"><value>Movimiento finalizado: {0} movidos, {1} ya en destino, {2} errores.</value></data>
+  <data name="StartingMediaOrganizationLog" xml:space="preserve"><value>Inicio de organización multimedia. Imágenes: {0} | Vídeos: {1} | Destino de imágenes: {2} | Destino de vídeos: {3}</value></data>
+  <data name="CannotPrepareDestinations" xml:space="preserve"><value>[ERROR] No se pudieron preparar los destinos: {0}</value></data>
+  <data name="NoPermissionPreparingDestinations" xml:space="preserve"><value>[ERROR] Sin permiso para preparar los destinos: {0}</value></data>
+  <data name="AccessDeniedPreparingDestinations" xml:space="preserve"><value>[ERROR] Acceso denegado al preparar los destinos: {0}</value></data>
+  <data name="NoMediaSelectedToOrganize" xml:space="preserve"><value>No hay archivos multimedia seleccionados para organizar.</value></data>
+  <data name="SourceFileNoLongerExists" xml:space="preserve"><value>El archivo de origen ya no existe.</value></data>
+  <data name="FileAlreadyOrganized" xml:space="preserve"><value>[YA ORGANIZADO] {0}</value></data>
+  <data name="CannotOrganizeFile" xml:space="preserve"><value>[ERROR] No se pudo organizar {0}: {1}</value></data>
+  <data name="NoPermissionOrganizingFile" xml:space="preserve"><value>[ERROR] Sin permiso para organizar {0}: {1}</value></data>
+  <data name="AccessDeniedOrganizingFile" xml:space="preserve"><value>[ERROR] Acceso denegado al organizar {0}: {1}</value></data>
+  <data name="MediaOrganizationCompletedLog" xml:space="preserve"><value>Fin de organización multimedia. Imágenes movidas: {0}/{1} | Vídeos movidos: {2}/{3} | Renombrados por colisión: {4} | Ya organizados: {5} | Errores de escaneo: {6} | Errores de movimiento: {7}</value></data>
+  <data name="MediaOrganizationCompleted" xml:space="preserve"><value>Organización finalizada: {0} imágenes y {1} vídeos movidos; {2} colisiones y {3} errores.</value></data>
+  <data name="SelectDestinationForType" xml:space="preserve"><value>Selecciona un destino para los archivos de {0}.</value></data>
+  <data name="DestinationCannotBeSourceOrInside" xml:space="preserve"><value>El destino de {0} no puede ser el origen ni estar dentro de él.</value></data>
+  <data name="SafeMoveRetry" xml:space="preserve"><value>[REINTENTO SEGURO] No se pudo mover directamente {0}: {1}</value></data>
+  <data name="CrossVolumeCopyWillBeVerified" xml:space="preserve"><value>[MOVIMIENTO ENTRE VOLÚMENES] Se verificará la copia antes de borrar {0}.</value></data>
+  <data name="CopyFailedSourceRetained" xml:space="preserve"><value>No se pudo crear la copia en {0}; se conservó el origen. {1}</value></data>
+  <data name="CopyVerificationFailedSourceRetained" xml:space="preserve"><value>No se pudo verificar por SHA-256 la copia en {0}; se conservó el origen. {1}</value></data>
+  <data name="CopyHashMismatchBothKept" xml:space="preserve"><value>La copia de seguridad de {0} no coincide por SHA-256; se conservaron el origen y la copia en {1}.</value></data>
+  <data name="VerifiedCopySourceCouldNotBeRemoved" xml:space="preserve"><value>La copia verificada se conservó en {0}, pero no se pudo eliminar el origen {1}. {2}</value></data>
+  <data name="SourceDeletedAfterShaVerification" xml:space="preserve"><value>[COPIA VERIFICADA] Se eliminó el origen solo tras verificar SHA-256: {0}</value></data>
+  <data name="FileSizeReadFailed" xml:space="preserve"><value>[ERROR] No se pudo leer el tamaño de {0}: {1}</value></data>
+  <data name="ComparingSameSizeFiles" xml:space="preserve"><value>Comparando el contenido de {0} archivos del mismo tamaño.</value></data>
+  <data name="FileComparisonFailed" xml:space="preserve"><value>[ERROR] No se pudo comparar {0}: {1}</value></data>
+  <data name="FileVerificationFailed" xml:space="preserve"><value>No se pudo verificar {0}.</value></data>
+  <data name="FileSizeChangedDuringScanLog" xml:space="preserve"><value>[CAMBIÓ] El tamaño cambió durante el escaneo: {0}</value></data>
+  <data name="FileChangedDuringScan" xml:space="preserve"><value>El archivo cambió durante el escaneo: {0}</value></data>
+  <data name="FileHashCalculated" xml:space="preserve"><value>[HASH] {0} · {1}</value></data>
+  <data name="ComparingFileContent" xml:space="preserve"><value>Comparando contenido: {0}</value></data>
+  <data name="DuplicateSearchCompletedLog" xml:space="preserve"><value>Búsqueda finalizada. Imágenes: {0} | Vídeos: {1} | Grupos idénticos: {2} | Errores de escaneo: {3} | Errores de verificación: {4}</value></data>
+  <data name="DuplicateSearchCompleted" xml:space="preserve"><value>Búsqueda finalizada: {0} grupos de contenido idéntico.</value></data>
+  <data name="SelectAtLeastOneDuplicate" xml:space="preserve"><value>Selecciona al menos un archivo duplicado.</value></data>
+  <data name="SelectionContainsUnverifiedFiles" xml:space="preserve"><value>La selección contiene archivos que no pertenecen a los duplicados verificados.</value></data>
+  <data name="KeepOneFilePerDuplicateGroup" xml:space="preserve"><value>Debe conservarse al menos un archivo de cada grupo duplicado.</value></data>
+  <data name="StartingRecycleBinMove" xml:space="preserve"><value>Inicio del envío a la Papelera de reciclaje. Archivos seleccionados: {0}</value></data>
+  <data name="CouldNotReverifyRetainedCopy" xml:space="preserve"><value>[CONSERVADO] No se pudo volver a verificar una copia que debía conservarse: {0}. {1}</value></data>
+  <data name="FileNoLongerMatchesScan" xml:space="preserve"><value>[CONSERVADO] El archivo ya no coincide con el escaneo: {0}. {1}</value></data>
+  <data name="FileRemainsAfterRecycleBin" xml:space="preserve"><value>El archivo sigue presente después de enviarlo a la Papelera.</value></data>
+  <data name="FileSentToRecycleBin" xml:space="preserve"><value>[PAPELERA] {0}</value></data>
+  <data name="CannotSendFileToRecycleBin" xml:space="preserve"><value>[ERROR] No se pudo enviar a la Papelera {0}: {1}</value></data>
+  <data name="NoPermissionSendingFileToRecycleBin" xml:space="preserve"><value>[ERROR] Sin permiso para enviar a la Papelera {0}: {1}</value></data>
+  <data name="AccessDeniedSendingFileToRecycleBin" xml:space="preserve"><value>[ERROR] Acceso denegado al enviar a la Papelera {0}: {1}</value></data>
+  <data name="RecycleBinMoveCompletedLog" xml:space="preserve"><value>Fin del envío a la Papelera. Enviados: {0} | Cambiados desde el escaneo: {1} | Errores: {2}</value></data>
+  <data name="RecycleBinMoveCompleted" xml:space="preserve"><value>Proceso finalizado: {0} enviados a la Papelera, {1} modificados y {2} errores.</value></data>
+  <data name="ContentChangedSinceScan" xml:space="preserve"><value>El contenido cambió desde el escaneo.</value></data>
+  <data name="StartingMediaScan" xml:space="preserve"><value>Inicio del escaneo multimedia. Origen: {0}</value></data>
+  <data name="MediaScanCompletedLog" xml:space="preserve"><value>Escaneo finalizado. Imágenes: {0} | Vídeos: {1} | Subcarpetas: {2} | Errores: {3}</value></data>
+  <data name="MediaScanCompleted" xml:space="preserve"><value>Escaneo finalizado: {0} {1}, {2} {3} en {4} subcarpetas.</value></data>
+  <data name="JanuaryFolder" xml:space="preserve"><value>01-Enero</value></data>
+  <data name="FebruaryFolder" xml:space="preserve"><value>02-Febrero</value></data>
+  <data name="MarchFolder" xml:space="preserve"><value>03-Marzo</value></data>
+  <data name="AprilFolder" xml:space="preserve"><value>04-Abril</value></data>
+  <data name="MayFolder" xml:space="preserve"><value>05-Mayo</value></data>
+  <data name="JuneFolder" xml:space="preserve"><value>06-Junio</value></data>
+  <data name="JulyFolder" xml:space="preserve"><value>07-Julio</value></data>
+  <data name="AugustFolder" xml:space="preserve"><value>08-Agosto</value></data>
+  <data name="SeptemberFolder" xml:space="preserve"><value>09-Septiembre</value></data>
+  <data name="OctoberFolder" xml:space="preserve"><value>10-Octubre</value></data>
+  <data name="NovemberFolder" xml:space="preserve"><value>11-Noviembre</value></data>
+  <data name="DecemberFolder" xml:space="preserve"><value>12-Diciembre</value></data>
+</root>
