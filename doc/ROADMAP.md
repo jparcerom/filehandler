@@ -65,6 +65,10 @@ Verificación: compilación Release y 26 pruebas superadas.
 - Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
 - Elegir y documentar el formato de entrega (ejecutable portable o instalador) antes de generar la versión final.
 
+### Mejora futura: splash screen
+- Añadir una pantalla de bienvenida al iniciar la aplicación que muestre el nombre de FileHandler, la versión y un copyright a nombre de jpmDevelope.
+- Queda pendiente para una fase posterior; no forma parte del trabajo actual.
+
 ## Criterios comunes de cierre
 
 - Los procesos largos informan de su avance y dejan un registro legible.
