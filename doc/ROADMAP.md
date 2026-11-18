@@ -66,6 +66,7 @@ Verificación: compilación Release y 26 pruebas superadas.
 ### Mejora visual de la pantalla principal — completada
 - Sustituye la etiqueta «DISPONIBLE» por un icono vectorial en cada operación.
 - Explica con más detalle la organización multimedia y el movimiento de duplicados verificados; conserva la descripción de extracción de subcarpetas.
+- Añade una barra inferior fija con la fecha, el nombre de la aplicación y un enlace de contacto a jpm.develope@gmail.com.
 
 Verificación de las mejoras visuales: compilación Release sin advertencias ni errores, 26 pruebas superadas y revisión manual del splash y la pantalla principal en Windows.
 

@@ -1,6 +1,10 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Windows;
+using System.Windows.Navigation;
 using Microsoft.Win32;
 using FileHandler.Models;
 using FileHandler.Services;
@@ -19,8 +23,36 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        DateTextBlock.Text = DateTime.Now.ToString("dd/MM/yyyy");
         SubfolderLogPathTextBlock.Text = $"Los registros se guardan en: {_subfolderFileService.LogPath}";
         MediaOrganizerLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaOrganizerService.LogPath}";
+    }
+
+    private void ContactHyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        e.Handled = true;
+        try
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch (Win32Exception exception)
+        {
+            MessageBox.Show(
+                this,
+                $"No se pudo abrir el enlace de correo: {exception.Message}",
+                "No se pudo abrir el correo",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch (InvalidOperationException exception)
+        {
+            MessageBox.Show(
+                this,
+                $"No se pudo abrir el enlace de correo: {exception.Message}",
+                "No se pudo abrir el correo",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void OrganizeMedia_Click(object sender, RoutedEventArgs e)
