@@ -60,14 +60,17 @@ Verificación: compilación Release y 19 pruebas superadas.
 
 Verificación: compilación Release y 26 pruebas superadas.
 
-### 7. Validación y distribución
-- Ejecutar la batería completa de pruebas y una revisión manual de los flujos en Windows.
-- Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
-- Elegir y documentar el formato de entrega (ejecutable portable o instalador) antes de generar la versión final.
+### Mejora visual previa a la distribución: splash screen — completada
+- Muestra FileHandler, la versión leída del ensamblado y el copyright © jpmDevelope al iniciar.
+- Da paso automáticamente a la ventana principal.
 
-### Mejora futura: splash screen
-- Añadir una pantalla de bienvenida al iniciar la aplicación que muestre el nombre de FileHandler, la versión y un copyright a nombre de jpmDevelope.
-- Queda pendiente para una fase posterior; no forma parte del trabajo actual.
+Verificación: compilación Release sin advertencias ni errores, 26 pruebas superadas y comprobación manual del arranque en Windows.
+
+### 7. Validación y distribución — en curso
+- Batería completa Release superada (26 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
+- Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
+- Preparar ambas entregas: una versión portable autocontenida y un instalador de Windows.
+- Generar la versión final tras completar las validaciones y revisar ambas entregas.
 
 ## Criterios comunes de cierre
 
