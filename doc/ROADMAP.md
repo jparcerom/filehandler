@@ -10,11 +10,13 @@ Este plan convierte los requisitos de [FileHandler.md](./FileHandler.md) en entr
 - Pruebas iniciales de fechas, colisiones y rutas.
 - Verificación: compilación Release y 4 pruebas superadas.
 
-### 1. Navegación y experiencia común — siguiente
-- Añadir una pantalla principal para elegir una operación y abrir su flujo correspondiente.
-- Mantener la selección de origen y destino dentro de cada operación.
-- Unificar estados, progreso, salida y presentación de errores sin bloquear la interfaz.
-- Asegurar que las operaciones aún no implementadas se identifiquen claramente, sin aparentar que funcionan.
+### 1. Navegación y experiencia común — completado
+- Añadida una pantalla principal para elegir una operación y abrir su flujo correspondiente.
+- La selección de origen y destino permanece dentro del flujo de "Organizar por fecha".
+- La operación mantiene el progreso, la salida y los errores visibles sin bloquear la interfaz.
+- Las tres operaciones pendientes se identifican claramente y no se pueden iniciar.
+
+Verificación: compilación Release y 4 pruebas superadas.
 
 ### 2. Escaneo y copia de multimedia
 - Recorrer origen y subcarpetas; contar imágenes, vídeos y subcarpetas.

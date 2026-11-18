@@ -16,6 +16,18 @@ public partial class MainWindow : Window
         LogPathTextBlock.Text = $"Los registros se guardan en: {_organizer.LogPath}";
     }
 
+    private void OrganizeByDate_Click(object sender, RoutedEventArgs e)
+    {
+        HomeView.Visibility = Visibility.Collapsed;
+        DateOrganizerView.Visibility = Visibility.Visible;
+    }
+
+    private void BackToHome_Click(object sender, RoutedEventArgs e)
+    {
+        HomeView.Visibility = Visibility.Visible;
+        DateOrganizerView.Visibility = Visibility.Collapsed;
+    }
+
     private void SelectSource_Click(object sender, RoutedEventArgs e)
     {
         var selectedPath = SelectFolder("Selecciona la carpeta de origen");
@@ -61,6 +73,9 @@ public partial class MainWindow : Window
         }
 
         StartButton.IsEnabled = false;
+        BackButton.IsEnabled = false;
+        SelectSourceButton.IsEnabled = false;
+        SelectDestinationButton.IsEnabled = false;
         OperationProgressBar.IsIndeterminate = true;
         OperationProgressBar.Value = 0;
         SummaryTextBlock.Text = string.Empty;
@@ -94,6 +109,9 @@ public partial class MainWindow : Window
         finally
         {
             StartButton.IsEnabled = true;
+            BackButton.IsEnabled = true;
+            SelectSourceButton.IsEnabled = true;
+            SelectDestinationButton.IsEnabled = true;
         }
     }
 

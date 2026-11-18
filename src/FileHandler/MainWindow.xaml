@@ -22,46 +22,122 @@
         </Border>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="30,24" MaxWidth="820" HorizontalAlignment="Left">
-                <TextBlock Text="Organizar por fecha" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
-                <TextBlock Text="Mueve los archivos de la carpeta de origen a carpetas por año y mes, utilizando la fecha más antigua entre creación y modificación."
-                           Margin="0,8,0,22" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
+            <Grid Margin="30,24" MaxWidth="820" HorizontalAlignment="Left">
+                <StackPanel x:Name="HomeView">
+                    <TextBlock Text="¿Qué quieres hacer?" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
+                    <TextBlock Text="Selecciona una operación para configurar sus carpetas y opciones."
+                               Margin="0,8,0,22" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
 
-                <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
-                <DockPanel Margin="0,7,0,18">
-                    <Button DockPanel.Dock="Right" Content="Seleccionar..." Click="SelectSource_Click" Margin="10,0,0,0" />
-                    <TextBox x:Name="SourcePathTextBox" IsReadOnly="True" ToolTip="Selecciona la carpeta que contiene los archivos." />
-                </DockPanel>
+                    <Button Click="OrganizeByDate_Click"
+                            HorizontalContentAlignment="Stretch"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="16"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Organizar por fecha" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
+                            <TextBlock Text="Mover archivos a carpetas por año y mes." Margin="0,5,0,0" Foreground="#4B5563" />
+                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
+                        </StackPanel>
+                    </Button>
 
-                <TextBlock Text="Carpeta de destino" FontWeight="SemiBold" Foreground="#374151" />
-                <DockPanel Margin="0,7,0,22">
-                    <Button DockPanel.Dock="Right" Content="Seleccionar..." Click="SelectDestination_Click" Margin="10,0,0,0" />
-                    <TextBox x:Name="DestinationPathTextBox" IsReadOnly="True" ToolTip="Selecciona dónde crear las carpetas de año y mes." />
-                </DockPanel>
+                    <Button IsEnabled="False"
+                            HorizontalContentAlignment="Stretch"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="16"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Copiar multimedia" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="Clasificar imágenes y vídeos por tipo y elegir destinos." Margin="0,5,0,0" />
+                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
 
-                <Button x:Name="StartButton"
-                        Content="Iniciar organización"
-                        HorizontalAlignment="Left"
-                        Background="#2563EB"
-                        Foreground="White"
-                        Click="Start_Click" />
-                <ProgressBar x:Name="OperationProgressBar" Height="12" Margin="0,22,0,8" Minimum="0" Maximum="100" />
-                <TextBlock x:Name="StatusTextBlock" Text="Selecciona las carpetas de origen y destino para comenzar."
-                           Foreground="#374151" TextWrapping="Wrap" />
-                <TextBlock x:Name="SummaryTextBlock" Margin="0,8,0,18" Foreground="#111827" FontWeight="SemiBold" />
+                    <Button IsEnabled="False"
+                            HorizontalContentAlignment="Stretch"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="16"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Mover duplicados de Windows" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="Verificar duplicados nativos antes de moverlos." Margin="0,5,0,0" />
+                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
 
-                <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
-                <TextBox x:Name="LogTextBox"
-                         Margin="0,8,0,0"
-                         Height="260"
-                         IsReadOnly="True"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         FontFamily="Consolas"
-                         FontSize="12" />
-                <TextBlock x:Name="LogPathTextBlock" Margin="0,8,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
-            </StackPanel>
+                    <Button IsEnabled="False"
+                            HorizontalContentAlignment="Stretch"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Sacar archivos de subcarpetas" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="Reunir los archivos en la raíz de una carpeta de destino." Margin="0,5,0,0" />
+                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel x:Name="DateOrganizerView" Visibility="Collapsed">
+                    <Button x:Name="BackButton"
+                            Content="← Todas las operaciones"
+                            HorizontalAlignment="Left"
+                            Click="BackToHome_Click"
+                            Margin="0,0,0,20" />
+                    <TextBlock Text="Organizar por fecha" FontSize="21" FontWeight="SemiBold" Foreground="#111827" />
+                    <TextBlock Text="Mueve los archivos de la carpeta de origen a carpetas por año y mes, utilizando la fecha más antigua entre creación y modificación."
+                               Margin="0,8,0,22" TextWrapping="Wrap" Foreground="#4B5563" FontSize="14" />
+
+                    <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,7,0,18">
+                        <Button x:Name="SelectSourceButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectSource_Click"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="SourcePathTextBox" IsReadOnly="True" ToolTip="Selecciona la carpeta que contiene los archivos." />
+                    </DockPanel>
+
+                    <TextBlock Text="Carpeta de destino" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,7,0,22">
+                        <Button x:Name="SelectDestinationButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectDestination_Click"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="DestinationPathTextBox" IsReadOnly="True" ToolTip="Selecciona dónde crear las carpetas de año y mes." />
+                    </DockPanel>
+
+                    <Button x:Name="StartButton"
+                            Content="Iniciar organización"
+                            HorizontalAlignment="Left"
+                            Background="#2563EB"
+                            Foreground="White"
+                            Click="Start_Click" />
+                    <ProgressBar x:Name="OperationProgressBar" Height="12" Margin="0,22,0,8" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="StatusTextBlock" Text="Selecciona las carpetas de origen y destino para comenzar."
+                               Foreground="#374151" TextWrapping="Wrap" />
+                    <TextBlock x:Name="SummaryTextBlock" Margin="0,8,0,18" Foreground="#111827" FontWeight="SemiBold" />
+
+                    <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
+                    <TextBox x:Name="LogTextBox"
+                             Margin="0,8,0,0"
+                             Height="260"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="12" />
+                    <TextBlock x:Name="LogPathTextBlock" Margin="0,8,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </Window>
