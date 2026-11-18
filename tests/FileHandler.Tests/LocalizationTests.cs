@@ -15,11 +15,12 @@ public sealed class LocalizationTests
     }
 
     [TestMethod]
-    public void ResolveCode_UsesSupportedSystemLanguageOrSpanishFallback()
+    public void ResolveCode_UsesSpanishOnlyForSpanishSystemLanguage()
     {
         Assert.AreEqual("en", AppLanguage.ResolveCode(null, "en-GB"));
-        Assert.AreEqual("es", AppLanguage.ResolveCode(null, "fr-FR"));
-        Assert.AreEqual("es", AppLanguage.ResolveCode(null, null));
+        Assert.AreEqual("es", AppLanguage.ResolveCode(null, "es-MX"));
+        Assert.AreEqual("en", AppLanguage.ResolveCode(null, "fr-FR"));
+        Assert.AreEqual("en", AppLanguage.ResolveCode(null, null));
     }
 
     [TestMethod]

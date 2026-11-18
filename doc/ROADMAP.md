@@ -82,7 +82,7 @@ Verificación de las mejoras visuales: compilación Release sin advertencias ni 
 
 ### 8. Localización español-inglés — completado
 - La aplicación presenta todos los textos de las ventanas, confirmaciones, errores y mensajes de actividad en español o inglés.
-- El instalador permite elegir idioma y conserva la selección para los siguientes inicios; el portable detecta el idioma preferido de Windows y usa español si no está disponible.
+- El instalador permite elegir idioma y conserva la selección para los siguientes inicios; el portable usa español si Windows está en español y, en cualquier otro caso, inglés.
 - Las carpetas mensuales se generan como `NN-Mes` en el idioma elegido. Las carpetas existentes no se renombran.
 
 Verificación: 36 pruebas superadas; cobertura de claves en ambos idiomas; instalación y desinstalación silenciosas comprobadas temporalmente con las opciones inglesa y española.

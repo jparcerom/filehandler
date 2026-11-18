@@ -29,7 +29,10 @@ internal static class AppLanguage
     internal static string ResolveCode(string? installedLanguage, string? systemLanguage)
     {
         var selectedLanguage = ResolveSupportedCode(installedLanguage);
-        return selectedLanguage ?? ResolveSupportedCode(systemLanguage) ?? "es";
+        return selectedLanguage
+            ?? (systemLanguage?.StartsWith("es", StringComparison.OrdinalIgnoreCase) == true
+                ? "es"
+                : "en");
     }
 
     private static string? ResolveSupportedCode(string? language) =>

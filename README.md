@@ -19,7 +19,7 @@ La aplicación muestra el progreso y la actividad de cada proceso. Los registros
 Descarga el instalador o el ZIP portable desde [GitHub Releases](https://github.com/jparcerom/filehandler/releases).
 
 - **Instalador:** permite elegir español o inglés y guarda la selección para los siguientes inicios. Para cambiar el idioma más adelante, vuelve a ejecutar el instalador y elige el otro idioma.
-- **Versión portable:** no requiere instalar .NET en el equipo de destino. Usa el idioma de Windows cuando sea español o inglés; para cualquier otro idioma, utiliza español.
+- **Versión portable:** no requiere instalar .NET en el equipo de destino. Usa español si el idioma de Windows es español; para cualquier otro idioma, usa inglés.
 
 Las carpetas de organización conservan el prefijo numérico del mes y muestran su nombre en el idioma seleccionado, por ejemplo, `02-Febrero` o `02-February`. Las carpetas existentes no se renombran.
 
@@ -57,7 +57,7 @@ The application displays progress and activity for each operation. Logs are save
 Download the installer or portable ZIP from [GitHub Releases](https://github.com/jparcerom/filehandler/releases).
 
 - **Installer:** lets you choose English or Spanish and saves the selection for future launches. To change the language later, run the installer again and choose the other language.
-- **Portable version:** does not require .NET to be installed on the target computer. It uses the Windows language when it is English or Spanish; for any other language, it falls back to Spanish.
+- **Portable version:** does not require .NET to be installed on the target computer. It uses Spanish when the Windows language is Spanish; for any other language, it uses English.
 
 Organized folders keep the numeric month prefix and use the selected language, for example, `02-February` or `02-Febrero`. Existing folders are not renamed.
 

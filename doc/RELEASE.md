@@ -19,6 +19,6 @@ Para generar únicamente el portable:
 
 Se necesita el SDK de .NET 8 y, para el instalador, Inno Setup 6 (`ISCC.exe`). El ejecutable del instalador no está firmado digitalmente. Los registros de la aplicación siguen guardándose en `%LOCALAPPDATA%\FileHandler\logs`.
 
-El instalador permite elegir español o inglés y guarda la selección para los siguientes inicios de la aplicación. La versión portable usa el idioma preferido de Windows si está disponible y, en caso contrario, español. Las carpetas de organización usan nombres de meses en el idioma seleccionado, conservando el prefijo numérico (por ejemplo, `02-Febrero` o `02-February`). Las carpetas ya existentes no se renombran.
+El instalador permite elegir español o inglés y guarda la selección para los siguientes inicios de la aplicación. La versión portable usa español si Windows está en español y, para cualquier otro idioma, inglés. Las carpetas de organización usan nombres de meses en el idioma seleccionado, conservando el prefijo numérico (por ejemplo, `02-Febrero` o `02-February`). Las carpetas ya existentes no se renombran.
 
 Para cambiar el idioma de una instalación existente, vuelve a ejecutar el instalador y elige el otro idioma.
