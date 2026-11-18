@@ -247,18 +247,7 @@ public sealed class MediaCopyService
             log.Write($"[COLISIÓN] El destino es una carpeta; se renombrará el entrante: {desiredPath}");
         }
 
-        var name = Path.GetFileNameWithoutExtension(fileName);
-        var extension = Path.GetExtension(fileName);
-        for (long suffix = 1; suffix < long.MaxValue; suffix++)
-        {
-            var candidate = Path.Combine(destination, $"{name}-{suffix}{extension}");
-            if (!File.Exists(candidate) && !Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-        }
-
-        throw new IOException($"No se pudo generar un nombre disponible para {fileName}.");
+        return UniqueDestinationPath.GetAvailablePath(destination, fileName);
     }
 
     private static string ComputeSha256(string path)

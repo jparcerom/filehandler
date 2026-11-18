@@ -32,9 +32,9 @@ Cuando windows crea duplicados suele añadir al nombre " (n)" dónde n es un nú
 
 Al seleccionar esta opción seguirá el mismo procedimiento que la opción anterior para seleccionar la carpeta de origen y destino.
 
-Con está opción buscaremos en la carpeta origen y todas sus subcarpetas estos archivos y verificaremos que realmente son copia del archivo original, que tendrá el mismo nombre sin " (n)".
+Con esta opción buscaremos en la carpeta de origen y todas sus subcarpetas únicamente archivos cuyo nombre termine en " (n)" antes de la extensión. Verificaremos su contenido mediante SHA-256 contra el archivo original, que tendrá el mismo nombre sin " (n)". Si no existe el original, se conservará como referencia el archivo con el sufijo numérico más bajo y se compararán con él los demás archivos del grupo.
 
-Todos estos duplicados se moverán a la carpeta que se seleccione como destino.
+Solo los duplicados que coincidan se moverán a la carpeta seleccionada como destino; los archivos diferentes, no verificables y las referencias se conservarán en origen. El destino no puede estar dentro del origen. Ante una colisión de nombres en destino se conservará el archivo existente y se añadirá un sufijo incremental al entrante. El movimiento requiere confirmación y vuelve a comprobar los hashes antes de mover.
 
 En este caso sí se moverán los archivos en vez de copiarlos, una vez movidos se revisarán manualmente para verificar que efectivamente siguen este formato en la carpeta destino.
 
@@ -55,6 +55,8 @@ La operación "Copiar multimedia" cuenta recursivamente imágenes y vídeos. Por
 La copia compara mediante SHA-256 cuando ya existe un archivo con el mismo nombre. Tanto si el contenido coincide como si difiere, conserva el archivo existente y guarda el entrante con un sufijo incremental (`-1`, `-2`, etc.); nunca sobrescribe. La copia no elimina por sí sola los archivos de origen; la limpieza es un paso posterior y confirmado.
 
 La limpieza opcional del origen solo elimina archivos cuya copia terminó correctamente y cuyo hash SHA-256 sigue coincidiendo con el destino; los archivos fallidos o modificados se conservan. Las subcarpetas solo se intentan eliminar cuando están vacías y después de los archivos, de abajo arriba. Si el origen contiene ambos tipos multimedia, solo se intentan borrar subcarpetas al seleccionar ambos tipos; si contiene uno solo, al seleccionarlo.
+
+La operación de duplicados de Windows reconoce únicamente el sufijo " (n)" antes de la extensión. Compara los candidatos con el original sin número o, si este no existe, con el candidato de número más bajo. Solo mueve las coincidencias SHA-256 tras confirmación y una nueva verificación; conserva el archivo de referencia y los candidatos no coincidentes o no verificables. El destino debe estar fuera del origen, y las colisiones reciben un sufijo incremental sin sobrescribir.
 
 Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las operaciones restantes están detalladas en el [roadmap](./ROADMAP.md).
 

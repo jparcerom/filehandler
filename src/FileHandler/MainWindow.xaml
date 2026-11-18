@@ -56,7 +56,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button IsEnabled="False"
+                    <Button Click="MoveDuplicates_Click"
                             HorizontalContentAlignment="Stretch"
                             Background="White"
                             BorderBrush="#D1D5DB"
@@ -66,7 +66,7 @@
                         <StackPanel>
                             <TextBlock Text="Mover duplicados de Windows" FontSize="16" FontWeight="SemiBold" />
                             <TextBlock Text="Verificar duplicados nativos antes de moverlos." Margin="0,5,0,0" />
-                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
                         </StackPanel>
                     </Button>
 
@@ -261,6 +261,83 @@
                              FontFamily="Consolas"
                              FontSize="12" />
                     <TextBlock x:Name="MediaLogPathTextBlock" Margin="0,5,0,0" Foreground="#6B7280" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel x:Name="WindowsDuplicatesView" Visibility="Collapsed">
+                    <Button x:Name="DuplicatesBackButton"
+                            Content="← Todas las operaciones"
+                            HorizontalAlignment="Left"
+                            Click="BackFromDuplicates_Click"
+                            Margin="0,0,0,14" />
+                    <TextBlock Text="Mover duplicados nativos de Windows"
+                               FontSize="21"
+                               FontWeight="SemiBold"
+                               Foreground="#111827" />
+                    <TextBlock Text="Solo se moverán archivos con sufijo numérico cuyo contenido coincida con el original o con el archivo numerado más bajo si falta el original."
+                               Margin="0,6,0,12"
+                               TextWrapping="Wrap"
+                               Foreground="#4B5563"
+                               FontSize="14" />
+
+                    <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,5,0,10">
+                        <Button x:Name="SelectDuplicatesSourceButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectDuplicatesSource_Click"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="DuplicatesSourcePathTextBox" IsReadOnly="True" />
+                    </DockPanel>
+
+                    <ProgressBar x:Name="DuplicatesProgressBar" Height="10" Margin="0,5,0,5" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="DuplicatesStatusTextBlock"
+                               Text="Selecciona la carpeta de origen para buscar duplicados."
+                               Foreground="#374151"
+                               TextWrapping="Wrap" />
+                    <TextBlock x:Name="DuplicatesCountsTextBlock"
+                               Margin="0,5,0,12"
+                               Foreground="#111827"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="Carpeta de destino" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,5,0,12">
+                        <Button x:Name="SelectDuplicatesDestinationButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectDuplicatesDestination_Click"
+                                IsEnabled="False"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="DuplicatesDestinationPathTextBox" IsReadOnly="True" />
+                    </DockPanel>
+
+                    <Button x:Name="MoveDuplicatesButton"
+                            Content="Mover duplicados verificados"
+                            HorizontalAlignment="Left"
+                            Background="#2563EB"
+                            Foreground="White"
+                            IsEnabled="False"
+                            Click="StartMoveDuplicates_Click" />
+                    <TextBlock x:Name="DuplicatesSummaryTextBlock"
+                               Margin="0,8,0,6"
+                               Foreground="#111827"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
+                    <TextBox x:Name="DuplicatesLogTextBox"
+                             Margin="0,5,0,0"
+                             Height="100"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="12" />
+                    <TextBlock x:Name="DuplicatesLogPathTextBlock"
+                               Margin="0,5,0,0"
+                               Foreground="#6B7280"
+                               FontSize="12"
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

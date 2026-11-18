@@ -34,10 +34,14 @@ Verificación: compilación Release y 8 pruebas superadas.
 
 Verificación: compilación Release y 11 pruebas superadas.
 
-### 4. Detección y movimiento de duplicados de Windows — siguiente
-- Identificar nombres con el sufijo de duplicado de Windows y localizar el archivo original correspondiente.
-- Verificar que original y duplicado tienen el mismo contenido antes de mover.
-- Registrar los casos no verificados y resolver colisiones en destino sin sobrescrituras.
+### 4. Detección y movimiento de duplicados de Windows — completado
+- Identifica únicamente archivos cuyo nombre termina con ` (n)` antes de la extensión.
+- Compara por SHA-256 con el original sin sufijo; si falta, conserva como referencia el sufijo numérico más bajo.
+- Solo mueve los archivos coincidentes tras confirmación y nueva comprobación de hashes; mantiene los distintos, no verificables y las referencias en origen.
+- Rechaza destinos dentro del origen y resuelve colisiones con sufijos incrementales sin sobrescribir.
+- Incluye selección de origen/destino, progreso, actividad y un resumen de candidatos, verificaciones y movimientos.
+
+Verificación: compilación Release y 15 pruebas superadas.
 
 ### 5. Extracción de archivos de subcarpetas
 - Mover archivos de subcarpetas a la raíz del destino.
