@@ -18,7 +18,7 @@ El escaneo recursivo se limita a las extensiones multimedia reconocidas por la o
 
 La revisión presenta todos los archivos en una tabla única, ordenados consecutivamente por grupo; cada fila muestra el resumen del grupo, la ruta, el tipo y la vista previa. Las imágenes se decodifican con WPF y los vídeos usan la miniatura proporcionada por Windows, con una indicación genérica cuando no está disponible. Se marcan automáticamente para la Papelera todas las copias salvo la primera ruta de cada grupo; el usuario puede desmarcar cualquier archivo que quiera conservar y confirma la operación. Si se marcan todas las copias de un grupo, se bloquea la operación y se resaltan en rojo tanto el aviso como las filas de ese grupo hasta que se desmarque al menos una. Se conserva al menos un archivo por grupo; antes de procesar la selección se vuelven a verificar los archivos elegidos y una copia que permanecerá. Los archivos que hayan cambiado o no se puedan verificar se conservan y el error se registra.
 
-Después de enviar archivos a la Papelera, se debe repetir el escaneo para actualizar los resultados.
+Después de enviar la selección a la Papelera, la aplicación vuelve a escanear automáticamente la carpeta y muestra los duplicados que aún quedan, junto con el resumen del envío.
 
 ## Sacar archivos de subcarpetas
 

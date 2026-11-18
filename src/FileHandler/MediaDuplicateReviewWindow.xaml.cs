@@ -191,16 +191,13 @@ public partial class MediaDuplicateReviewWindow : Window
                 selectedFiles.Select(file => file.File.Path).ToArray(),
                 progress));
 
-            SummaryTextBlock.Text =
+            var deletionSummary =
                 $"Enviados a la Papelera: {summary.SentToRecycleBin.Count} · " +
                 $"Modificados desde el escaneo: {summary.ChangedSinceScan} · Errores: {summary.Errors}.";
-            if (summary.SentToRecycleBin.Count > 0)
-            {
-                ClearResults();
-                _scan = null;
-                CountsTextBlock.Text = string.Empty;
-                StatusTextBlock.Text = "Vuelve a buscar para actualizar los resultados.";
-            }
+            await ScanSourceAsync(scan.SourcePath);
+            SummaryTextBlock.Text = string.IsNullOrEmpty(SummaryTextBlock.Text)
+                ? deletionSummary
+                : $"{deletionSummary}{Environment.NewLine}{SummaryTextBlock.Text}";
         }
         catch (ArgumentException exception)
         {
