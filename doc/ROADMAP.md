@@ -62,9 +62,13 @@ Verificación: compilación Release y 26 pruebas superadas.
 
 ### Mejora visual previa a la distribución: splash screen — completada
 - Muestra FileHandler, la versión leída del ensamblado y el copyright © jpmDevelope al iniciar.
-- Da paso automáticamente a la ventana principal.
+- Se mantiene 2,5 segundos con una barra de progreso simulada y después da paso a la ventana principal.
 
-Verificación: compilación Release sin advertencias ni errores, 26 pruebas superadas y comprobación manual del arranque en Windows.
+### Mejora visual de la pantalla principal — completada
+- Sustituye la etiqueta «DISPONIBLE» por un icono vectorial en cada operación.
+- Explica con más detalle la organización multimedia y el movimiento de duplicados verificados; conserva la descripción de extracción de subcarpetas.
+
+Verificación de las mejoras visuales: compilación Release sin advertencias ni errores, 26 pruebas superadas y revisión manual del splash y la pantalla principal en Windows.
 
 ### 7. Validación y distribución — en curso
 - Batería completa Release superada (26 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.

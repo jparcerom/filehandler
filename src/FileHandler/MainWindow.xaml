@@ -35,11 +35,35 @@
                             BorderThickness="1"
                             Padding="16"
                             Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Organizar archivos multimedia" FontSize="16" FontWeight="SemiBold" Foreground="#111827" />
-                            <TextBlock Text="Seleccionar imágenes, vídeos o ambos y organizar por año y mes." Margin="0,5,0,0" Foreground="#4B5563" />
-                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="48"
+                                    Height="48"
+                                    Margin="0,4,16,0"
+                                    VerticalAlignment="Top"
+                                    Background="#EFF6FF"
+                                    CornerRadius="24">
+                                <Path Data="M4,5 H10 L12,7 H20 V19 H4 Z M6,17 L10,12 L13,15 L16,11 L20,16"
+                                      Fill="Transparent"
+                                      Stroke="#2563EB"
+                                      StrokeThickness="1.6"
+                                      StrokeLineJoin="Round"
+                                      Margin="11" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Organizar archivos multimedia"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827" />
+                                <TextBlock Text="Selecciona la carpeta de tus fotografías y vídeos para organizarlos por año y mes y crear tu archivo cronológico. Puedes separar los vídeos de las imágenes o guardarlo todo en una misma carpeta."
+                                           Margin="0,5,0,0"
+                                           TextWrapping="Wrap"
+                                           Foreground="#4B5563" />
+                            </StackPanel>
+                        </Grid>
                     </Button>
 
                     <Button Click="MoveDuplicates_Click"
@@ -49,11 +73,35 @@
                             BorderThickness="1"
                             Padding="16"
                             Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Mover duplicados de Windows" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Text="Verificar duplicados nativos antes de moverlos." Margin="0,5,0,0" />
-                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="48"
+                                    Height="48"
+                                    Margin="0,4,16,0"
+                                    VerticalAlignment="Top"
+                                    Background="#FEF2F2"
+                                    CornerRadius="24">
+                                <Path Data="M8,4 H20 V18 H8 Z M5,7 H16 V21 H5 Z"
+                                      Fill="Transparent"
+                                      Stroke="#DC2626"
+                                      StrokeThickness="1.6"
+                                      StrokeLineJoin="Round"
+                                      Margin="11" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Mover duplicados de Windows"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827" />
+                                <TextBlock Text="Verifica los duplicados con sufijo de Windows y mueve los que coinciden a la carpeta que elijas."
+                                           Margin="0,5,0,0"
+                                           TextWrapping="Wrap"
+                                           Foreground="#4B5563" />
+                            </StackPanel>
+                        </Grid>
                     </Button>
 
                     <Button Click="ExtractSubfolderFiles_Click"
@@ -62,11 +110,35 @@
                             BorderBrush="#D1D5DB"
                             BorderThickness="1"
                             Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="Sacar archivos de subcarpetas" FontSize="16" FontWeight="SemiBold" />
-                            <TextBlock Text="Reunir los archivos en la raíz de una carpeta de destino." Margin="0,5,0,0" />
-                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="48"
+                                    Height="48"
+                                    Margin="0,4,16,0"
+                                    VerticalAlignment="Top"
+                                    Background="#ECFDF5"
+                                    CornerRadius="24">
+                                <Path Data="M4,6 H10 L12,8 H20 V18 H4 Z M11,13 H18 M15,10 L18,13 L15,16"
+                                      Fill="Transparent"
+                                      Stroke="#059669"
+                                      StrokeThickness="1.6"
+                                      StrokeLineJoin="Round"
+                                      Margin="11" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Sacar archivos de subcarpetas"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111827" />
+                                <TextBlock Text="Reunir los archivos en la raíz de una carpeta de destino."
+                                           Margin="0,5,0,0"
+                                           TextWrapping="Wrap"
+                                           Foreground="#4B5563" />
+                            </StackPanel>
+                        </Grid>
                     </Button>
                 </StackPanel>
 

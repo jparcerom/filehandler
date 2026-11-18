@@ -19,6 +19,7 @@
                 <RowDefinition Height="6" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0"
@@ -40,7 +41,18 @@
                            HorizontalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Grid.Row="2"
+            <ProgressBar x:Name="StartupProgressBar"
+                         Grid.Row="2"
+                         Height="4"
+                         Margin="40,0,40,18"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"
+                         Background="#E5E7EB"
+                         Foreground="#2563EB"
+                         BorderThickness="0" />
+
+            <TextBlock Grid.Row="3"
                        Text="© jpmDevelope"
                        Margin="0,0,0,22"
                        FontSize="12"

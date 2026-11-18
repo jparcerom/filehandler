@@ -13,7 +13,12 @@ public partial class App : Application
         MainWindow = mainWindow;
         splash.Show();
 
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        splash.StartLoadingAnimation();
+
+        var timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(SplashWindow.DisplayDurationSeconds)
+        };
         timer.Tick += (_, _) =>
         {
             timer.Stop();
