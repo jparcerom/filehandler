@@ -128,7 +128,7 @@
                     <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
                     <TextBox x:Name="LogTextBox"
                              Margin="0,8,0,0"
-                             Height="260"
+                             Height="120"
                              IsReadOnly="True"
                              AcceptsReturn="True"
                              TextWrapping="Wrap"
