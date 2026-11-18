@@ -45,4 +45,18 @@ Otra de las opciones es la de sacar todos los archivos de las subcarpetas de una
 Cualquier proceso que se ejecute debe mostrar la salida y guardarlo en logs además de mostrar mientras se ejecuta una barra de progreso o un conteo de archivos procesados.
 
 # Desarrollo
-Se usará el lenguage más adecuado para el desarrollo de la aplicación para windows.
+La aplicación de escritorio se desarrolla en C# con .NET 8 y WPF para Windows.
+
+### Decisión para la versión 2.0
+La primera operación implementada es "Organizar por fecha": recorre la carpeta de origen y sus subcarpetas, elige la fecha más antigua entre creación y modificación, y mueve los archivos a carpetas `Año/NN-Mes`. Si ya existe un elemento con el mismo nombre en el destino, el archivo se omite y se registra para evitar sobrescrituras.
+
+Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las demás operaciones descritas en este documento quedan pendientes de implementación.
+
+Para compilar y ejecutar las pruebas desde la raíz del repositorio se necesita el SDK de .NET 8:
+
+```powershell
+dotnet build .\src\FileHandler\FileHandler.csproj
+dotnet test .\tests\FileHandler.Tests\FileHandler.Tests.csproj
+```
+
+El plan de entregas y su estado se mantiene en [ROADMAP.md](./ROADMAP.md).
