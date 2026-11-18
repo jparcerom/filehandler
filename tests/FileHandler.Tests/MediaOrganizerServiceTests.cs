@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using FileHandler.Models;
 using FileHandler.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -197,6 +199,99 @@ public sealed class MediaOrganizerServiceTests
             Assert.AreEqual(1, summary.AlreadyOrganized);
             Assert.AreEqual(0, summary.ImagesMoved);
             Assert.IsTrue(File.Exists(image));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Organize_ReportsLockedFilesAndKeepsTheSource()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            Directory.CreateDirectory(source);
+            var sourceFile = Path.Combine(source, "photo.jpg");
+            File.WriteAllText(sourceFile, "locked image");
+            SetDates(sourceFile, new DateTime(2020, 2, 3), new DateTime(2020, 2, 3));
+
+            var service = new MediaOrganizerService(Path.Combine(root, "logs", "filehandler.log"));
+            var scan = service.Scan(source, new Progress<OperationProgress>());
+            using (new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                var summary = service.Organize(
+                    scan,
+                    organizeImages: true,
+                    Path.Combine(root, "destination"),
+                    organizeVideos: false,
+                    videoDestination: null,
+                    new Progress<OperationProgress>());
+
+                Assert.AreEqual(1, summary.Errors);
+                Assert.AreEqual(0, summary.ImagesMoved);
+                Assert.IsTrue(File.Exists(sourceFile));
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Organize_ReportsInsufficientDestinationPermissionsAndKeepsTheSource()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            var destination = Path.Combine(root, "destination");
+            Directory.CreateDirectory(source);
+            Directory.CreateDirectory(destination);
+            var sourceFile = Path.Combine(source, "photo.jpg");
+            File.WriteAllText(sourceFile, "image");
+            SetDates(sourceFile, new DateTime(2020, 2, 3), new DateTime(2020, 2, 3));
+
+            var destinationInfo = new DirectoryInfo(destination);
+            var originalAccess = destinationInfo.GetAccessControl(AccessControlSections.Access);
+            var originalAccessSddl = originalAccess.GetSecurityDescriptorSddlForm(AccessControlSections.Access);
+            var restrictedAccess = new DirectorySecurity();
+            restrictedAccess.SetSecurityDescriptorSddlForm(originalAccessSddl, AccessControlSections.Access);
+            restrictedAccess.AddAccessRule(new FileSystemAccessRule(
+                WindowsIdentity.GetCurrent().User
+                    ?? throw new InvalidOperationException("No se pudo determinar el usuario actual."),
+                FileSystemRights.Modify,
+                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                PropagationFlags.None,
+                AccessControlType.Deny));
+            destinationInfo.SetAccessControl(restrictedAccess);
+
+            try
+            {
+                var service = new MediaOrganizerService(Path.Combine(root, "logs", "filehandler.log"));
+                var scan = service.Scan(source, new Progress<OperationProgress>());
+                var summary = service.Organize(
+                    scan,
+                    organizeImages: true,
+                    destination,
+                    organizeVideos: false,
+                    videoDestination: null,
+                    new Progress<OperationProgress>());
+
+                Assert.AreEqual(1, summary.Errors);
+                Assert.AreEqual(0, summary.ImagesMoved);
+                Assert.IsTrue(File.Exists(sourceFile));
+                Assert.IsFalse(Directory.Exists(Path.Combine(destination, "2020")));
+            }
+            finally
+            {
+                var restoreAccess = new DirectorySecurity();
+                restoreAccess.SetSecurityDescriptorSddlForm(originalAccessSddl, AccessControlSections.Access);
+                destinationInfo.SetAccessControl(restoreAccess);
+            }
         }
         finally
         {

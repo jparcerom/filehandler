@@ -137,6 +137,38 @@ public sealed class SubfolderFileServiceTests
         }
     }
 
+    [TestMethod]
+    public void Move_ReportsLockedFilesAndKeepsThemAtTheSource()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            var nested = Path.Combine(source, "nested");
+            Directory.CreateDirectory(nested);
+            var sourceFile = Path.Combine(nested, "locked.txt");
+            File.WriteAllText(sourceFile, "locked");
+
+            var service = new SubfolderFileService(Path.Combine(root, "logs", "filehandler.log"));
+            var scan = service.Scan(source, new Progress<OperationProgress>());
+            using (new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                var summary = service.Move(
+                    scan,
+                    Path.Combine(root, "destination"),
+                    new Progress<OperationProgress>());
+
+                Assert.AreEqual(0, summary.Moved);
+                Assert.AreEqual(1, summary.Errors);
+                Assert.IsTrue(File.Exists(sourceFile));
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), $"FileHandler.SubfolderTests-{Guid.NewGuid():N}");

@@ -117,6 +117,77 @@ public sealed class DateOrganizerTests
         }
     }
 
+    [TestMethod]
+    public void Organize_SupportsSourcePathsLongerThanMaxPath()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            var nestedSource = Path.Combine(
+                source,
+                new string('a', 80),
+                new string('b', 80),
+                new string('c', 80));
+            Directory.CreateDirectory(nestedSource);
+            var sourceFile = Path.Combine(nestedSource, "photo.jpg");
+            File.WriteAllText(sourceFile, "long path image");
+            File.SetCreationTime(sourceFile, new DateTime(2020, 2, 3));
+            File.SetLastWriteTime(sourceFile, new DateTime(2020, 2, 3));
+            Assert.IsTrue(sourceFile.Length > 260);
+
+            var destination = Path.Combine(root, "destination");
+            var organizer = new DateOrganizer(Path.Combine(root, "logs", "filehandler.log"));
+            var summary = organizer.Organize(source, destination, new Progress<OperationProgress>());
+
+            Assert.AreEqual(1, summary.Moved);
+            Assert.AreEqual(0, summary.Errors);
+            Assert.IsFalse(File.Exists(sourceFile));
+            Assert.AreEqual(
+                "long path image",
+                File.ReadAllText(Path.Combine(destination, "2020", "02-Febrero", "photo.jpg")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Organize_ReportsLockedFilesAndKeepsTheSource()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            Directory.CreateDirectory(source);
+            var sourceFile = Path.Combine(source, "photo.jpg");
+            File.WriteAllText(sourceFile, "locked image");
+            File.SetCreationTime(sourceFile, new DateTime(2020, 2, 3));
+            File.SetLastWriteTime(sourceFile, new DateTime(2020, 2, 3));
+
+            var logPath = Path.Combine(root, "logs", "filehandler.log");
+            var organizer = new DateOrganizer(logPath);
+            using (new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                var summary = organizer.Organize(
+                    source,
+                    Path.Combine(root, "destination"),
+                    new Progress<OperationProgress>());
+
+                Assert.AreEqual(1, summary.Errors);
+                Assert.AreEqual(0, summary.Moved);
+                Assert.IsTrue(File.Exists(sourceFile));
+            }
+
+            StringAssert.Contains(File.ReadAllText(logPath), "[ERROR]");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), $"FileHandler.Tests-{Guid.NewGuid():N}");

@@ -73,9 +73,9 @@ Verificación: compilación Release y 26 pruebas superadas.
 Verificación de las mejoras visuales: compilación Release sin advertencias ni errores, 26 pruebas superadas y revisión manual del splash y la pantalla principal en Windows.
 
 ### 7. Validación y distribución — en curso
-- Batería completa Release superada (26 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
+- Batería completa Release superada (32 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
 - La búsqueda de duplicados se comprobó en Windows con archivos de prueba: los archivos multimedia reconocidos se agrupan por contenido idéntico, independientemente de sus nombres.
-- Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
+- La batería cubre rutas de origen superiores a 260 caracteres, archivos bloqueados al organizar/copiar/extraer, destinos sin permiso de escritura y colisiones de nombres.
 - Preparar ambas entregas: una versión portable autocontenida y un instalador de Windows.
 - Generar la versión final tras completar las validaciones y revisar ambas entregas.
 

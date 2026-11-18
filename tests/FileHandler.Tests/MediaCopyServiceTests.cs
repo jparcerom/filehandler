@@ -144,6 +144,42 @@ public sealed class MediaCopyServiceTests
         }
     }
 
+    [TestMethod]
+    public void Copy_ReportsLockedSourceFilesAndPreservesThem()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var source = Path.Combine(root, "source");
+            Directory.CreateDirectory(source);
+            var sourceFile = Path.Combine(source, "photo.jpg");
+            File.WriteAllText(sourceFile, "locked image");
+
+            var service = new MediaCopyService(Path.Combine(root, "logs", "filehandler.log"));
+            var scan = service.Scan(source, new Progress<OperationProgress>());
+            var destination = Path.Combine(root, "destination");
+            using (new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                var summary = service.Copy(
+                    scan,
+                    copyImages: true,
+                    imageDestination: destination,
+                    copyVideos: false,
+                    videoDestination: null,
+                    new Progress<OperationProgress>());
+
+                Assert.AreEqual(0, summary.ImagesCopied);
+                Assert.AreEqual(1, summary.CopyErrors);
+                Assert.IsTrue(File.Exists(sourceFile));
+                Assert.IsFalse(File.Exists(Path.Combine(destination, "photo.jpg")));
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), $"FileHandler.MediaTests-{Guid.NewGuid():N}");
