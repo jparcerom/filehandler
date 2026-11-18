@@ -243,7 +243,17 @@ public partial class MediaDuplicateReviewWindow : Window
         var selectedCount = _groups
             .SelectMany(group => group.Files)
             .Count(file => file.IsSelectedForDeletion);
-        var invalidGroup = HasGroupWithEveryFileSelected();
+        var invalidGroup = false;
+        foreach (var group in _groups)
+        {
+            var groupIsInvalid = group.Files.Count > 0
+                && group.Files.All(file => file.IsSelectedForDeletion);
+            invalidGroup |= groupIsInvalid;
+            foreach (var file in group.Files)
+            {
+                file.IsGroupSelectionInvalid = groupIsInvalid;
+            }
+        }
 
         DeleteSelectedButton.IsEnabled =
             !_isBusy && _scan is not null && selectedCount > 0 && !invalidGroup;
@@ -252,6 +262,18 @@ public partial class MediaDuplicateReviewWindow : Window
             : selectedCount > 0
                 ? $"Hay {selectedCount} copias marcadas; queda al menos una sin marcar por grupo."
                 : string.Empty;
+        SelectionWarningBorder.Background = invalidGroup
+            ? new SolidColorBrush(Color.FromRgb(185, 28, 28))
+            : Brushes.Transparent;
+        SelectionWarningBorder.Padding = invalidGroup
+            ? new Thickness(8, 4, 8, 4)
+            : new Thickness(0);
+        SelectionWarningTextBlock.Foreground = invalidGroup
+            ? Brushes.White
+            : new SolidColorBrush(Color.FromRgb(180, 83, 9));
+        SelectionWarningTextBlock.FontWeight = invalidGroup
+            ? FontWeights.Bold
+            : FontWeights.Normal;
 
         SelectSourceButton.IsEnabled = !_isBusy;
         ScanAgainButton.IsEnabled = !_isBusy && SourcePathTextBox.Text.Trim().Length > 0;
@@ -340,6 +362,7 @@ public partial class MediaDuplicateReviewWindow : Window
     {
         private bool _thumbnailLoadStarted;
         private bool _isSelectedForDeletion;
+        private bool _isGroupSelectionInvalid;
         private ImageSource? _thumbnail;
 
         public DuplicateFileRow(
@@ -360,6 +383,21 @@ public partial class MediaDuplicateReviewWindow : Window
         public string SizeText => FormatSize(File.Size);
         public string TypeText => File.IsImage ? "Imagen" : "Vídeo";
         public string TypeIcon => File.IsImage ? "FOTO" : "VÍDEO";
+
+        public bool IsGroupSelectionInvalid
+        {
+            get => _isGroupSelectionInvalid;
+            set
+            {
+                if (_isGroupSelectionInvalid == value)
+                {
+                    return;
+                }
+
+                _isGroupSelectionInvalid = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsGroupSelectionInvalid)));
+            }
+        }
 
         public bool TryBeginThumbnailLoad()
         {

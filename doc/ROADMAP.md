@@ -39,6 +39,7 @@ Verificación: compilación Release y 11 pruebas superadas.
 - Muestra grupos revisables con rutas, tipo y miniaturas de imágenes o vídeos cuando Windows las proporciona.
 - Presenta todos los archivos en una tabla única, ordenados consecutivamente por grupo y con el resumen del grupo en cada fila; marca automáticamente para la Papelera todas las copias salvo la primera ruta y permite desmarcar archivos que se quieran conservar.
 - Requiere confirmación; conserva al menos una copia por grupo y vuelve a verificar antes de procesar.
+- Si se marca todo un grupo, bloquea el envío y resalta en rojo el aviso y las filas afectadas.
 - Registra errores y cambios detectados desde el escaneo, y requiere volver a buscar para refrescar los resultados.
 
 Verificación: compilación Release y 26 pruebas superadas; revisión manual con datos de prueba (3 imágenes, 2 vídeos, 2 grupos idénticos y 1 archivo no multimedia ignorado).

@@ -84,6 +84,18 @@
                       VirtualizingPanel.IsVirtualizing="True"
                       VirtualizingPanel.VirtualizationMode="Recycling"
                       Visibility="Collapsed">
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsGroupSelectionInvalid}" Value="True">
+                                <Setter Property="Background" Value="#FEE2E2" />
+                                <Setter Property="Foreground" Value="#7F1D1D" />
+                                <Setter Property="BorderBrush" Value="#DC2626" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="Enviar a papelera" Width="115">
                         <DataGridTemplateColumn.CellTemplate>
@@ -159,11 +171,17 @@
                         IsEnabled="False"
                         Background="#B91C1C"
                         Foreground="White" />
-                <TextBlock x:Name="SelectionWarningTextBlock"
-                           VerticalAlignment="Center"
-                           Margin="0,0,12,0"
-                           Foreground="#B45309"
-                           TextWrapping="Wrap" />
+                <Border x:Name="SelectionWarningBorder"
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"
+                        Padding="0"
+                        Background="Transparent"
+                        CornerRadius="4">
+                    <TextBlock x:Name="SelectionWarningTextBlock"
+                               VerticalAlignment="Center"
+                               Foreground="#B45309"
+                               TextWrapping="Wrap" />
+                </Border>
             </DockPanel>
             <TextBlock x:Name="SummaryTextBlock"
                        Margin="0,7,0,0"
