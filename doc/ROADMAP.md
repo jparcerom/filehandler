@@ -36,7 +36,6 @@ Verificación: compilación Release y 11 pruebas superadas.
 
 ### 4. Búsqueda y revisión de duplicados multimedia — completado
 - Escanea imágenes y vídeos reconocidos y encuentra contenido idéntico por tamaño y SHA-256, aunque los nombres sean distintos.
-- Presenta por separado las coincidencias de nombre cuyo contenido difiere o no se pudo verificar; estas no se pueden eliminar.
 - Muestra grupos revisables con rutas, tipo y miniaturas de imágenes o vídeos cuando Windows las proporciona.
 - Permite elegir manualmente copias para enviarlas a la Papelera tras confirmación; conserva al menos una copia por grupo y vuelve a verificar antes de procesar.
 - Registra errores y cambios detectados desde el escaneo, y requiere volver a buscar para refrescar los resultados.
@@ -72,7 +71,7 @@ Verificación de las mejoras visuales: compilación Release sin advertencias ni 
 
 ### 7. Validación y distribución — en curso
 - Batería completa Release superada (26 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
-- La búsqueda de duplicados se comprobó en Windows con archivos de prueba: los tipos reconocidos y los avisos por nombre aparecen separados de los grupos de contenido idéntico.
+- La búsqueda de duplicados se comprobó en Windows con archivos de prueba: los archivos multimedia reconocidos se agrupan por contenido idéntico, independientemente de sus nombres.
 - Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
 - Preparar ambas entregas: una versión portable autocontenida y un instalador de Windows.
 - Generar la versión final tras completar las validaciones y revisar ambas entregas.

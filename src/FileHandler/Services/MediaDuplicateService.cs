@@ -111,32 +111,14 @@ public sealed class MediaDuplicateService
             .ThenBy(group => group.Files[0].Path, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var nameMatches = files
-            .GroupBy(file => System.IO.Path.GetFileName(file.Path), StringComparer.OrdinalIgnoreCase)
-            .Where(group => group.Count() > 1)
-            .Where(group => !HasOneVerifiedContent(group))
-            .Select(group =>
-            {
-                var matchedFiles = group
-                    .OrderBy(file => file.Path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-                return new MediaNameMatchGroup(
-                    System.IO.Path.GetFileName(matchedFiles[0].Path),
-                    GetNameMatchReason(matchedFiles),
-                    matchedFiles);
-            })
-            .OrderBy(group => group.FileName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
         log.Write(
             $"Búsqueda finalizada. Imágenes: {mediaScan.ImageFiles.Count} | Vídeos: {mediaScan.VideoFiles.Count} | " +
-            $"Grupos idénticos: {duplicateGroups.Length} | Coincidencias de nombre no exactas: {nameMatches.Length} | " +
+            $"Grupos idénticos: {duplicateGroups.Length} | " +
             $"Errores de escaneo: {mediaScan.Errors} | Errores de verificación: {verificationErrors}");
         progress.Report(new OperationProgress(
             hashCount,
             hashCount,
-            $"Búsqueda finalizada: {duplicateGroups.Length} grupos de contenido idéntico y " +
-            $"{nameMatches.Length} coincidencias de nombre que requieren revisión."));
+            $"Búsqueda finalizada: {duplicateGroups.Length} grupos de contenido idéntico."));
 
         return new MediaDuplicateScanResult(
             mediaScan.SourcePath,
@@ -144,8 +126,7 @@ public sealed class MediaDuplicateService
             mediaScan.VideoFiles.Count,
             mediaScan.Errors,
             verificationErrors,
-            duplicateGroups,
-            nameMatches);
+            duplicateGroups);
     }
 
     public MediaDuplicateRemovalSummary SendSelectedToRecycleBin(
@@ -393,26 +374,6 @@ public sealed class MediaDuplicateService
             error = exception.Message;
             return false;
         }
-    }
-
-    private static bool HasOneVerifiedContent(IEnumerable<MediaDuplicateFile> files)
-    {
-        var candidates = files.ToArray();
-        return candidates.All(file => file.Size.HasValue && file.Sha256 is not null) &&
-               candidates.Select(file => (file.Size, file.Sha256)).Distinct().Count() == 1;
-    }
-
-    private static string GetNameMatchReason(IReadOnlyList<MediaDuplicateFile> files)
-    {
-        var knownSizes = files.Where(file => file.Size.HasValue).Select(file => file.Size).Distinct().Count();
-        if (knownSizes > 1)
-        {
-            return "Coincide el nombre, pero los tamaños son distintos.";
-        }
-
-        return files.Any(file => !file.Size.HasValue || file.Sha256 is null)
-            ? "Coincide el nombre, pero no se pudo verificar todo el contenido."
-            : "Coincide el nombre, pero el contenido es distinto.";
     }
 
     private static void SendToRecycleBin(string path) =>

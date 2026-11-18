@@ -11,29 +11,38 @@ namespace FileHandler.Tests;
 public sealed class MediaDuplicateServiceTests
 {
     [TestMethod]
-    public void Scan_FindsIdenticalMediaByHashAndReportsNameMatchesSeparately()
+    public void Scan_FindsIdenticalMediaByHashAndIgnoresNameOnlyMatches()
     {
         var root = CreateTemporaryDirectory();
         try
         {
             var source = Path.Combine(root, "source");
             Directory.CreateDirectory(Path.Combine(source, "nested"));
+            Directory.CreateDirectory(Path.Combine(source, "same-name"));
             const string sharedContent = "same multimedia bytes";
+            const string sameNameContent = "same name and content";
             File.WriteAllText(Path.Combine(source, "photo.jpg"), sharedContent);
             File.WriteAllText(Path.Combine(source, "renamed.mp4"), sharedContent);
             File.WriteAllText(Path.Combine(source, "nested", "photo.jpg"), "same multimedia byteX");
+            File.WriteAllText(Path.Combine(source, "same-name.jpg"), sameNameContent);
+            File.WriteAllText(Path.Combine(source, "same-name", "same-name.jpg"), sameNameContent);
             File.WriteAllText(Path.Combine(source, "ignored.txt"), sharedContent);
 
             var service = CreateService(root);
             var scan = service.Scan(source, new Progress<OperationProgress>());
 
-            Assert.AreEqual(2, scan.ImageCount);
+            Assert.AreEqual(4, scan.ImageCount);
             Assert.AreEqual(1, scan.VideoCount);
-            Assert.AreEqual(1, scan.DuplicateGroups.Count);
-            Assert.AreEqual(2, scan.DuplicateGroups[0].Files.Count);
-            Assert.AreEqual(1, scan.NameMatches.Count);
-            Assert.AreEqual("photo.jpg", scan.NameMatches[0].FileName);
-            Assert.AreEqual(2, scan.NameMatches[0].Files.Count);
+            Assert.AreEqual(2, scan.DuplicateGroups.Count);
+            var differentNamesGroup = scan.DuplicateGroups.Single(group =>
+                group.Files.Any(file => file.Path.EndsWith("renamed.mp4", StringComparison.OrdinalIgnoreCase)));
+            Assert.AreEqual(2, differentNamesGroup.Files.Count);
+            Assert.IsFalse(differentNamesGroup.Files.Any(file => file.Path.EndsWith(
+                Path.Combine("nested", "photo.jpg"),
+                StringComparison.OrdinalIgnoreCase)));
+            var sameNamesGroup = scan.DuplicateGroups.Single(group =>
+                group.Files.Any(file => Path.GetFileName(file.Path) == "same-name.jpg"));
+            Assert.AreEqual(2, sameNamesGroup.Files.Count);
             Assert.AreEqual(0, scan.VerificationErrors);
         }
         finally

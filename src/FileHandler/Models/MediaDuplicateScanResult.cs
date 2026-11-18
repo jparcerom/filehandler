@@ -6,5 +6,4 @@ public sealed record MediaDuplicateScanResult(
     int VideoCount,
     int ScanErrors,
     int VerificationErrors,
-    IReadOnlyList<MediaDuplicateGroup> DuplicateGroups,
-    IReadOnlyList<MediaNameMatchGroup> NameMatches);
+    IReadOnlyList<MediaDuplicateGroup> DuplicateGroups);

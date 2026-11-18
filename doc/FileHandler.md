@@ -14,7 +14,7 @@ Ante una colisión se conserva el archivo existente y el entrante recibe un sufi
 
 ## Buscar duplicados multimedia
 
-El escaneo recursivo se limita a las extensiones multimedia reconocidas por la operación de organización. Primero agrupa por tamaño y después compara el contenido mediante SHA-256, por lo que detecta copias aunque tengan nombres distintos. Las coincidencias de nombre con contenido diferente o no verificable se presentan aparte como avisos y no se pueden seleccionar para eliminar.
+El escaneo recursivo se limita a las extensiones multimedia reconocidas por la operación de organización. Primero agrupa por tamaño y después compara el contenido mediante SHA-256, por lo que detecta copias aunque tengan nombres distintos. Solo se presentan grupos cuyo contenido se ha verificado como idéntico.
 
 La revisión muestra cada grupo idéntico con sus rutas, tipo y vista previa: las imágenes se decodifican con WPF y los vídeos usan la miniatura proporcionada por Windows, con una indicación genérica cuando no está disponible. El usuario elige manualmente qué copias enviar a la Papelera de reciclaje de Windows y confirma la operación. Se conserva al menos un archivo de cada grupo; antes de procesar la selección se vuelven a verificar los archivos elegidos y una copia que permanecerá. Los archivos que hayan cambiado o no se puedan verificar se conservan y el error se registra.
 

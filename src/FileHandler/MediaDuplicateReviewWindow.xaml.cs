@@ -18,7 +18,6 @@ public partial class MediaDuplicateReviewWindow : Window
 {
     private readonly MediaDuplicateService _service = new();
     private readonly ObservableCollection<DuplicateGroupRow> _groups = new();
-    private readonly ObservableCollection<NameMatchRow> _nameMatches = new();
     private MediaDuplicateScanResult? _scan;
     private bool _isBusy;
 
@@ -26,7 +25,6 @@ public partial class MediaDuplicateReviewWindow : Window
     {
         InitializeComponent();
         DuplicateGroupsListBox.ItemsSource = _groups;
-        NameMatchesGrid.ItemsSource = _nameMatches;
         LogPathTextBlock.Text = $"Los registros se guardan en: {_service.LogPath}";
     }
 
@@ -86,21 +84,12 @@ public partial class MediaDuplicateReviewWindow : Window
                 _groups.Add(groupRow);
             }
 
-            foreach (var nameMatch in scan.NameMatches)
-            {
-                _nameMatches.Add(new NameMatchRow(nameMatch));
-            }
-
             DuplicateResultsGrid.Visibility = _groups.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             DuplicateEmptyTextBlock.Visibility = _groups.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            NameMatchesGrid.Visibility = _nameMatches.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            NameMatchesEmptyTextBlock.Visibility = _nameMatches.Count == 0
-                ? Visibility.Visible
-                : Visibility.Collapsed;
 
             CountsTextBlock.Text =
                 $"{scan.ImageCount} imágenes · {scan.VideoCount} vídeos · " +
-                $"{scan.DuplicateGroups.Count} grupos idénticos · {scan.NameMatches.Count} avisos por nombre";
+                $"{scan.DuplicateGroups.Count} grupos idénticos";
             if (scan.ScanErrors > 0 || scan.VerificationErrors > 0)
             {
                 CountsTextBlock.Text +=
@@ -324,12 +313,9 @@ public partial class MediaDuplicateReviewWindow : Window
         }
 
         _groups.Clear();
-        _nameMatches.Clear();
         DuplicateFilesGrid.ItemsSource = null;
         DuplicateResultsGrid.Visibility = Visibility.Collapsed;
         DuplicateEmptyTextBlock.Visibility = Visibility.Visible;
-        NameMatchesGrid.Visibility = Visibility.Collapsed;
-        NameMatchesEmptyTextBlock.Visibility = Visibility.Visible;
         UpdateControls();
     }
 
@@ -418,19 +404,4 @@ public partial class MediaDuplicateReviewWindow : Window
         }
     }
 
-    private sealed class NameMatchRow
-    {
-        public NameMatchRow(MediaNameMatchGroup group)
-        {
-            FileName = group.FileName;
-            Reason = group.Reason;
-            PathsText = string.Join(
-                Environment.NewLine,
-                group.Files.Select(file => $"{file.Path} ({FormatSize(file.Size)})"));
-        }
-
-        public string FileName { get; }
-        public string Reason { get; }
-        public string PathsText { get; }
-    }
 }
