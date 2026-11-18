@@ -34,14 +34,14 @@ Verificación: compilación Release y 8 pruebas superadas.
 
 Verificación: compilación Release y 11 pruebas superadas.
 
-### 4. Detección y movimiento de duplicados de Windows — completado
-- Identifica únicamente archivos cuyo nombre termina con ` (n)` antes de la extensión.
-- Compara por SHA-256 con el original sin sufijo; si falta, conserva como referencia el sufijo numérico más bajo.
-- Solo mueve los archivos coincidentes tras confirmación y nueva comprobación de hashes; mantiene los distintos, no verificables y las referencias en origen.
-- Rechaza destinos dentro del origen y resuelve colisiones con sufijos incrementales sin sobrescribir.
-- Incluye selección de origen/destino, progreso, actividad y un resumen de candidatos, verificaciones y movimientos.
+### 4. Búsqueda y revisión de duplicados multimedia — completado
+- Escanea imágenes y vídeos reconocidos y encuentra contenido idéntico por tamaño y SHA-256, aunque los nombres sean distintos.
+- Presenta por separado las coincidencias de nombre cuyo contenido difiere o no se pudo verificar; estas no se pueden eliminar.
+- Muestra grupos revisables con rutas, tipo y miniaturas de imágenes o vídeos cuando Windows las proporciona.
+- Permite elegir manualmente copias para enviarlas a la Papelera tras confirmación; conserva al menos una copia por grupo y vuelve a verificar antes de procesar.
+- Registra errores y cambios detectados desde el escaneo, y requiere volver a buscar para refrescar los resultados.
 
-Verificación: compilación Release y 15 pruebas superadas.
+Verificación: compilación Release y 26 pruebas superadas; revisión manual con datos de prueba (3 imágenes, 2 vídeos, 2 grupos idénticos y 1 aviso por nombre).
 
 ### 5. Extracción de archivos de subcarpetas — completado
 - Escanea recursivamente y mueve a la raíz del destino solo los archivos que provienen de subcarpetas; los que están en la raíz del origen no se alteran.
@@ -72,6 +72,7 @@ Verificación de las mejoras visuales: compilación Release sin advertencias ni 
 
 ### 7. Validación y distribución — en curso
 - Batería completa Release superada (26 pruebas) y pantallas de las tres operaciones revisadas manualmente en Windows.
+- La búsqueda de duplicados se comprobó en Windows con archivos de prueba: los tipos reconocidos y los avisos por nombre aparecen separados de los grupos de contenido idéntico.
 - Verificar el comportamiento con rutas largas, permisos insuficientes, archivos bloqueados y destinos con colisiones.
 - Preparar ambas entregas: una versión portable autocontenida y un instalador de Windows.
 - Generar la versión final tras completar las validaciones y revisar ambas entregas.

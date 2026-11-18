@@ -9,20 +9,16 @@ namespace FileHandler;
 
 public partial class MainWindow : Window
 {
-    private readonly WindowsDuplicateService _windowsDuplicateService = new();
     private readonly SubfolderFileService _subfolderFileService = new();
     private readonly MediaOrganizerService _mediaOrganizerService = new();
     private MediaScanResult? _mediaScanResult;
-    private WindowsDuplicateScanResult? _windowsDuplicateScan;
     private SubfolderFileScanResult? _subfolderFileScan;
     private bool _mediaOrganizationRunning;
-    private bool _duplicatesOperationRunning;
     private bool _subfolderOperationRunning;
 
     public MainWindow()
     {
         InitializeComponent();
-        DuplicatesLogPathTextBlock.Text = $"Los registros se guardan en: {_windowsDuplicateService.LogPath}";
         SubfolderLogPathTextBlock.Text = $"Los registros se guardan en: {_subfolderFileService.LogPath}";
         MediaOrganizerLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaOrganizerService.LogPath}";
     }
@@ -45,227 +41,10 @@ public partial class MainWindow : Window
         MediaOrganizerView.Visibility = Visibility.Collapsed;
     }
 
-    private void MoveDuplicates_Click(object sender, RoutedEventArgs e)
+    private void FindMediaDuplicates_Click(object sender, RoutedEventArgs e)
     {
-        HomeView.Visibility = Visibility.Collapsed;
-        WindowsDuplicatesView.Visibility = Visibility.Visible;
-        ResetDuplicatesView();
-    }
-
-    private void BackFromDuplicates_Click(object sender, RoutedEventArgs e)
-    {
-        if (_duplicatesOperationRunning)
-        {
-            return;
-        }
-
-        HomeView.Visibility = Visibility.Visible;
-        WindowsDuplicatesView.Visibility = Visibility.Collapsed;
-    }
-
-    private async void SelectDuplicatesSource_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedPath = SelectFolder("Selecciona la carpeta para buscar duplicados");
-        if (selectedPath is not null)
-        {
-            DuplicatesSourcePathTextBox.Text = selectedPath;
-            DuplicatesDestinationPathTextBox.Clear();
-            await ScanDuplicatesSourceAsync(selectedPath);
-        }
-    }
-
-    private async Task ScanDuplicatesSourceAsync(string source)
-    {
-        _windowsDuplicateScan = null;
-        DuplicatesCountsTextBlock.Text = string.Empty;
-        DuplicatesSummaryTextBlock.Text = string.Empty;
-        DuplicatesLogTextBox.Clear();
-        DuplicatesProgressBar.Value = 0;
-        DuplicatesProgressBar.IsIndeterminate = true;
-        DuplicatesStatusTextBlock.Text = "Escaneando y verificando archivos numerados...";
-        _duplicatesOperationRunning = true;
-        SelectDuplicatesSourceButton.IsEnabled = false;
-        DuplicatesBackButton.IsEnabled = false;
-        UpdateDuplicatesControls();
-
-        var progress = new Progress<OperationProgress>(UpdateDuplicatesProgress);
-        try
-        {
-            var scan = await Task.Run(() => _windowsDuplicateService.Scan(source, progress));
-            _windowsDuplicateScan = scan;
-            DuplicatesCountsTextBlock.Text =
-                $"{scan.CandidateCount} candidatos · {scan.VerifiedDuplicates.Count} verificados · " +
-                $"{scan.UnverifiedCount} no verificados · {scan.FallbackOriginalCount} grupos sin original " +
-                "(se retuvo el sufijo más bajo)";
-            if (scan.ScanErrors > 0 || scan.VerificationErrors > 0)
-            {
-                DuplicatesCountsTextBlock.Text +=
-                    $" · {scan.ScanErrors} errores de escaneo · {scan.VerificationErrors} errores de verificación";
-            }
-
-            if (scan.VerifiedDuplicates.Count == 0)
-            {
-                DuplicatesSummaryTextBlock.Text = "No hay archivos verificados para mover.";
-            }
-        }
-        catch (ArgumentException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (DirectoryNotFoundException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (IOException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (SecurityException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        finally
-        {
-            _duplicatesOperationRunning = false;
-            SelectDuplicatesSourceButton.IsEnabled = true;
-            DuplicatesBackButton.IsEnabled = true;
-            UpdateDuplicatesControls();
-        }
-    }
-
-    private void SelectDuplicatesDestination_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedPath = SelectFolder("Selecciona la carpeta donde guardar los duplicados");
-        if (selectedPath is not null)
-        {
-            DuplicatesDestinationPathTextBox.Text = selectedPath;
-            UpdateDuplicatesControls();
-        }
-    }
-
-    private void UpdateDuplicatesControls()
-    {
-        var hasVerifiedFiles = !_duplicatesOperationRunning &&
-                               _windowsDuplicateScan is { VerifiedDuplicates.Count: > 0 };
-        SelectDuplicatesDestinationButton.IsEnabled = hasVerifiedFiles;
-        MoveDuplicatesButton.IsEnabled = hasVerifiedFiles &&
-                                         DuplicatesDestinationPathTextBox.Text.Trim().Length > 0;
-    }
-
-    private async void StartMoveDuplicates_Click(object sender, RoutedEventArgs e)
-    {
-        var scan = _windowsDuplicateScan;
-        var destination = DuplicatesDestinationPathTextBox.Text.Trim();
-        if (scan is null || scan.VerifiedDuplicates.Count == 0 || destination.Length == 0)
-        {
-            return;
-        }
-
-        var confirmation = MessageBox.Show(
-            this,
-            $"Se moverán {scan.VerifiedDuplicates.Count} archivos cuyo contenido fue verificado. " +
-            $"Los originales usados como referencia y los archivos no coincidentes se conservarán.{Environment.NewLine}{Environment.NewLine}" +
-            $"Destino: {destination}{Environment.NewLine}{Environment.NewLine}" +
-            "Si ya existe un archivo con el mismo nombre, se añadirá un sufijo. ¿Quieres continuar?",
-            "Confirmar movimiento de duplicados",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-        if (confirmation != MessageBoxResult.Yes)
-        {
-            return;
-        }
-
-        _duplicatesOperationRunning = true;
-        DuplicatesProgressBar.Value = 0;
-        DuplicatesProgressBar.IsIndeterminate = false;
-        DuplicatesSummaryTextBlock.Text = string.Empty;
-        DuplicatesBackButton.IsEnabled = false;
-        SelectDuplicatesSourceButton.IsEnabled = false;
-        UpdateDuplicatesControls();
-        var progress = new Progress<OperationProgress>(UpdateDuplicatesProgress);
-        try
-        {
-            var summary = await Task.Run(() => _windowsDuplicateService.Move(scan, destination, progress));
-            DuplicatesSummaryTextBlock.Text =
-                $"Movidos: {summary.Moved} · Renombrados por colisión: {summary.CollisionRenames} · " +
-                $"No verificados: {summary.UnverifiedCount} · Cambiados desde el escaneo: {summary.ChangedSinceScan} · " +
-                $"Errores de movimiento: {summary.Errors} · Errores de escaneo/verificación: " +
-                $"{summary.ScanErrors}/{summary.VerificationErrors}.";
-            _windowsDuplicateScan = null;
-        }
-        catch (ArgumentException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (DirectoryNotFoundException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (IOException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (UnauthorizedAccessException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (InvalidOperationException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        catch (SecurityException exception)
-        {
-            ShowDuplicatesOperationError(exception.Message);
-        }
-        finally
-        {
-            _duplicatesOperationRunning = false;
-            DuplicatesBackButton.IsEnabled = true;
-            SelectDuplicatesSourceButton.IsEnabled = true;
-            UpdateDuplicatesControls();
-        }
-    }
-
-    private void UpdateDuplicatesProgress(OperationProgress update)
-    {
-        DuplicatesProgressBar.IsIndeterminate = update.IsScanning;
-        if (!update.IsScanning)
-        {
-            DuplicatesProgressBar.Value = update.Total == 0
-                ? 100
-                : update.Processed * 100.0 / update.Total;
-        }
-        DuplicatesStatusTextBlock.Text = update.Message;
-        DuplicatesLogTextBox.AppendText(update.Message + Environment.NewLine);
-        DuplicatesLogTextBox.ScrollToEnd();
-    }
-
-    private void ShowDuplicatesOperationError(string message)
-    {
-        DuplicatesProgressBar.IsIndeterminate = false;
-        DuplicatesStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
-        DuplicatesLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
-        MessageBox.Show(this, message, "Error con duplicados", MessageBoxButton.OK, MessageBoxImage.Error);
-    }
-
-    private void ResetDuplicatesView()
-    {
-        _windowsDuplicateScan = null;
-        DuplicatesSourcePathTextBox.Clear();
-        DuplicatesDestinationPathTextBox.Clear();
-        DuplicatesCountsTextBlock.Text = string.Empty;
-        DuplicatesSummaryTextBlock.Text = string.Empty;
-        DuplicatesLogTextBox.Clear();
-        DuplicatesProgressBar.Value = 0;
-        DuplicatesProgressBar.IsIndeterminate = false;
-        DuplicatesStatusTextBlock.Text = "Selecciona la carpeta de origen para buscar duplicados.";
-        SelectDuplicatesSourceButton.IsEnabled = true;
-        DuplicatesBackButton.IsEnabled = true;
-        UpdateDuplicatesControls();
+        var window = new MediaDuplicateReviewWindow { Owner = this };
+        window.ShowDialog();
     }
 
     private void ExtractSubfolderFiles_Click(object sender, RoutedEventArgs e)

@@ -12,11 +12,13 @@ Los archivos seleccionados se mueven a carpetas `Año/NN-Mes`, usando la fecha m
 
 Ante una colisión se conserva el archivo existente y el entrante recibe un sufijo incremental, tanto si el contenido coincide como si difiere. El movimiento normal se usa cuando es posible; si hay que cruzar volúmenes o el movimiento directo falla, se copia y se comprueba por SHA-256 antes de eliminar el origen. Si la copia, la verificación o el borrado fallan, se conserva el origen y se informa del error. Las carpetas que queden vacías no se eliminan.
 
-## Mover duplicados nativos de Windows
+## Buscar duplicados multimedia
 
-Windows suele añadir ` (n)` al nombre de los duplicados. Se buscan recursivamente solo archivos cuyo nombre termine así antes de la extensión. Se verifica su contenido mediante SHA-256 contra el archivo original sin sufijo; si no existe, se conserva como referencia el archivo con el sufijo numérico más bajo.
+El escaneo recursivo se limita a las extensiones multimedia reconocidas por la operación de organización. Primero agrupa por tamaño y después compara el contenido mediante SHA-256, por lo que detecta copias aunque tengan nombres distintos. Las coincidencias de nombre con contenido diferente o no verificable se presentan aparte como avisos y no se pueden seleccionar para eliminar.
 
-Solo los duplicados coincidentes se mueven al destino confirmado. Los archivos diferentes, no verificables y las referencias se conservan en origen. El destino no puede estar dentro del origen. Ante una colisión se conserva el archivo existente y se añade un sufijo incremental al entrante.
+La revisión muestra cada grupo idéntico con sus rutas, tipo y vista previa: las imágenes se decodifican con WPF y los vídeos usan la miniatura proporcionada por Windows, con una indicación genérica cuando no está disponible. El usuario elige manualmente qué copias enviar a la Papelera de reciclaje de Windows y confirma la operación. Se conserva al menos un archivo de cada grupo; antes de procesar la selección se vuelven a verificar los archivos elegidos y una copia que permanecerá. Los archivos que hayan cambiado o no se puedan verificar se conservan y el error se registra.
+
+Después de enviar archivos a la Papelera, se debe repetir el escaneo para actualizar los resultados.
 
 ## Sacar archivos de subcarpetas
 
