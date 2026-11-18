@@ -26,13 +26,15 @@ Verificación: compilación Release y 4 pruebas superadas.
 
 Verificación: compilación Release y 8 pruebas superadas.
 
-### 3. Limpieza opcional del origen tras la copia — siguiente
-- Permitir elegir qué tipos de origen borrar después de la copia.
-- Mostrar una confirmación explícita que indique los tipos y si se intentarán eliminar subcarpetas.
-- Eliminar únicamente archivos seleccionados y carpetas vacías, recorriendo estas últimas de abajo arriba.
-- Probar que una copia fallida o incompleta no provoque un borrado accidental.
+### 3. Limpieza opcional del origen tras la copia — completado
+- Permite elegir qué tipos de originales borrar y confirma los archivos y el posible borrado de subcarpetas.
+- Solo se eliminan fuentes cuya copia terminó correctamente y cuyos hashes SHA-256 siguen coincidiendo.
+- Los archivos fallidos, ausentes o modificados se conservan; las carpetas no vacías nunca se eliminan.
+- Las carpetas vacías se procesan de abajo arriba y solo cuando se seleccionan todos los tipos presentes, según la regla definida.
 
-### 4. Detección y movimiento de duplicados de Windows
+Verificación: compilación Release y 11 pruebas superadas.
+
+### 4. Detección y movimiento de duplicados de Windows — siguiente
 - Identificar nombres con el sufijo de duplicado de Windows y localizar el archivo original correspondiente.
 - Verificar que original y duplicado tienen el mismo contenido antes de mover.
 - Registrar los casos no verificados y resolver colisiones en destino sin sobrescrituras.

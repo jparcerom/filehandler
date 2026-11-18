@@ -6,4 +6,5 @@ public sealed record MediaCopySummary(
     int ImagesCopied,
     int VideosCopied,
     int ScanErrors,
-    int CopyErrors);
+    int CopyErrors,
+    IReadOnlyList<MediaCopyEntry> SuccessfulCopies);

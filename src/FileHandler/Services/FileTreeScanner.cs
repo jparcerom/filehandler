@@ -13,8 +13,8 @@ public sealed class FileTreeScanner
         Action<string> log)
     {
         var files = new List<string>();
+        var subdirectories = new List<string>();
         var errors = 0;
-        var subdirectoryCount = 0;
         var directories = new Stack<string>();
         directories.Push(sourcePath);
 
@@ -65,7 +65,7 @@ public sealed class FileTreeScanner
                         }
 
                         directories.Push(subdirectory);
-                        subdirectoryCount++;
+                        subdirectories.Add(subdirectory);
                     }
                     catch (IOException exception)
                     {
@@ -101,7 +101,7 @@ public sealed class FileTreeScanner
             }
         }
 
-        return new FileTreeScanResult(files, subdirectoryCount, errors);
+        return new FileTreeScanResult(files, subdirectories, errors);
     }
 
     public static bool IsSameOrDescendant(string path, string parent)

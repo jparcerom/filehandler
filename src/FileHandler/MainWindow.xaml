@@ -215,6 +215,41 @@
                             Click="StartMediaCopy_Click"
                             Margin="0,14,0,0" />
                     <TextBlock x:Name="MediaSummaryTextBlock" Margin="0,8,0,6" Foreground="#111827" FontWeight="SemiBold" />
+                    <Border x:Name="DeleteMediaSection"
+                            Visibility="Collapsed"
+                            Background="White"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="12"
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Eliminar originales (opcional)"
+                                       FontWeight="SemiBold"
+                                       Foreground="#111827" />
+                            <TextBlock Text="Solo se eliminarán originales copiados que sigan coincidiendo con su destino. Los archivos no copiados o modificados se conservarán."
+                                       Margin="0,4,0,8"
+                                       TextWrapping="Wrap"
+                                       Foreground="#4B5563" />
+                            <CheckBox x:Name="DeleteImagesCheckBox"
+                                      Content="Eliminar originales de imágenes"
+                                      IsEnabled="False"
+                                      Checked="MediaDeleteSelection_Changed"
+                                      Unchecked="MediaDeleteSelection_Changed"
+                                      Margin="0,2" />
+                            <CheckBox x:Name="DeleteVideosCheckBox"
+                                      Content="Eliminar originales de vídeos"
+                                      IsEnabled="False"
+                                      Checked="MediaDeleteSelection_Changed"
+                                      Unchecked="MediaDeleteSelection_Changed"
+                                      Margin="0,2" />
+                            <Button x:Name="DeleteMediaButton"
+                                    Content="Eliminar seleccionados"
+                                    HorizontalAlignment="Left"
+                                    IsEnabled="False"
+                                    Click="DeleteCopiedMedia_Click"
+                                    Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
                     <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
                     <TextBox x:Name="MediaLogTextBox"
                              Margin="0,5,0,0"

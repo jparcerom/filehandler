@@ -4,5 +4,8 @@ public sealed record MediaScanResult(
     string SourcePath,
     IReadOnlyList<string> ImageFiles,
     IReadOnlyList<string> VideoFiles,
-    int SubdirectoryCount,
-    int Errors);
+    IReadOnlyList<string> Directories,
+    int Errors)
+{
+    public int SubdirectoryCount => Directories.Count;
+}

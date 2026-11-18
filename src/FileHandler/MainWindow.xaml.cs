@@ -11,7 +11,9 @@ public partial class MainWindow : Window
 {
     private readonly DateOrganizer _organizer = new();
     private readonly MediaCopyService _mediaCopyService = new();
+    private readonly MediaCleanupService _mediaCleanupService = new();
     private MediaScanResult? _mediaScanResult;
+    private MediaCopySummary? _mediaCopySummary;
     private bool _mediaOperationRunning;
 
     public MainWindow()
@@ -84,8 +86,12 @@ public partial class MainWindow : Window
     private async Task ScanMediaSourceAsync(string source)
     {
         _mediaScanResult = null;
+        _mediaCopySummary = null;
         CopyImagesCheckBox.IsChecked = false;
         CopyVideosCheckBox.IsChecked = false;
+        DeleteImagesCheckBox.IsChecked = false;
+        DeleteVideosCheckBox.IsChecked = false;
+        DeleteMediaSection.Visibility = Visibility.Collapsed;
         ImageDestinationTextBox.Clear();
         VideoDestinationTextBox.Clear();
         MediaCountsTextBlock.Text = string.Empty;
@@ -214,7 +220,8 @@ public partial class MainWindow : Window
         var confirmation = MessageBox.Show(
             this,
             $"Se copiarán los siguientes archivos; el origen se conservará:{Environment.NewLine}{Environment.NewLine}" +
-            string.Join(Environment.NewLine, selectedItems),
+            string.Join(Environment.NewLine, selectedItems) +
+            $"{Environment.NewLine}{Environment.NewLine}Las colisiones se resolverán con sufijos; no se sobrescribirá ningún archivo.",
             "Confirmar copia",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
@@ -223,6 +230,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        _mediaCopySummary = null;
+        DeleteImagesCheckBox.IsChecked = false;
+        DeleteVideosCheckBox.IsChecked = false;
+        DeleteMediaSection.Visibility = Visibility.Collapsed;
         _mediaOperationRunning = true;
         CopyMediaButton.IsEnabled = false;
         SelectMediaSourceButton.IsEnabled = false;
@@ -249,6 +260,14 @@ public partial class MainWindow : Window
             {
                 MediaSummaryTextBlock.Text += $" · {summary.ScanErrors} errores de escaneo";
             }
+            _mediaCopySummary = summary;
+            DeleteImagesCheckBox.Content = $"Eliminar originales de imágenes ({summary.ImagesCopied})";
+            DeleteVideosCheckBox.Content = $"Eliminar originales de vídeos ({summary.VideosCopied})";
+            DeleteImagesCheckBox.IsChecked = false;
+            DeleteVideosCheckBox.IsChecked = false;
+            DeleteMediaSection.Visibility = summary.SuccessfulCopies.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
         catch (ArgumentException exception)
         {
@@ -280,6 +299,131 @@ public partial class MainWindow : Window
             SelectMediaSourceButton.IsEnabled = true;
             MediaBackButton.IsEnabled = true;
             UpdateMediaCopyControls();
+            UpdateMediaDeleteControls();
+        }
+    }
+
+    private void MediaDeleteSelection_Changed(object sender, RoutedEventArgs e)
+    {
+        UpdateMediaDeleteControls();
+    }
+
+    private void UpdateMediaDeleteControls()
+    {
+        var summary = _mediaCopySummary;
+        var canDelete = summary is not null && !_mediaOperationRunning;
+        var imageCopies = summary?.SuccessfulCopies.Count(copy => copy.IsImage) ?? 0;
+        var videoCopies = summary?.SuccessfulCopies.Count(copy => !copy.IsImage) ?? 0;
+
+        DeleteImagesCheckBox.IsEnabled = canDelete && imageCopies > 0;
+        DeleteVideosCheckBox.IsEnabled = canDelete && videoCopies > 0;
+        DeleteMediaButton.IsEnabled = canDelete &&
+            (DeleteImagesCheckBox.IsChecked == true || DeleteVideosCheckBox.IsChecked == true);
+    }
+
+    private async void DeleteCopiedMedia_Click(object sender, RoutedEventArgs e)
+    {
+        var scan = _mediaScanResult;
+        var copySummary = _mediaCopySummary;
+        var deleteImages = DeleteImagesCheckBox.IsChecked == true;
+        var deleteVideos = DeleteVideosCheckBox.IsChecked == true;
+        if (scan is null || copySummary is null || (!deleteImages && !deleteVideos))
+        {
+            MessageBox.Show(
+                this,
+                "Selecciona al menos un tipo de original para eliminar.",
+                "No hay archivos seleccionados",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        var removeEmptyDirectories =
+            MediaCleanupService.ShouldRemoveEmptyDirectories(scan, deleteImages, deleteVideos);
+        var selectedItems = new List<string>();
+        if (deleteImages)
+        {
+            selectedItems.Add($"{copySummary.SuccessfulCopies.Count(copy => copy.IsImage)} imágenes");
+        }
+        if (deleteVideos)
+        {
+            selectedItems.Add($"{copySummary.SuccessfulCopies.Count(copy => !copy.IsImage)} vídeos");
+        }
+
+        var confirmationMessage =
+            $"Se intentarán eliminar estos originales:{Environment.NewLine}{string.Join(", ", selectedItems)}." +
+            $"{Environment.NewLine}{Environment.NewLine}Solo se borrarán si siguen coincidiendo por SHA-256 con su copia. " +
+            "Los archivos que no se copiaron o que cambiaron se conservarán.";
+        confirmationMessage += removeEmptyDirectories
+            ? $"{Environment.NewLine}{Environment.NewLine}También se intentarán eliminar las subcarpetas vacías, " +
+              "de abajo arriba. Las carpetas no vacías se conservarán."
+            : $"{Environment.NewLine}{Environment.NewLine}No se eliminarán subcarpetas porque no se han seleccionado " +
+              "todos los tipos multimedia presentes en el origen.";
+
+        var confirmation = MessageBox.Show(
+            this,
+            confirmationMessage,
+            "Confirmar eliminación de originales",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        _mediaOperationRunning = true;
+        SelectMediaSourceButton.IsEnabled = false;
+        MediaBackButton.IsEnabled = false;
+        UpdateMediaCopyControls();
+        UpdateMediaDeleteControls();
+        MediaProgressBar.Value = 0;
+        MediaProgressBar.IsIndeterminate = false;
+        var progress = new Progress<OperationProgress>(UpdateMediaProgress);
+        try
+        {
+            var summary = await Task.Run(() => _mediaCleanupService.DeleteCopiedFiles(
+                scan,
+                copySummary.SuccessfulCopies,
+                deleteImages,
+                deleteVideos,
+                progress));
+            MediaSummaryTextBlock.Text =
+                $"Eliminados: {summary.ImagesDeleted} imágenes · {summary.VideosDeleted} vídeos · " +
+                $"{summary.EmptyDirectoriesDeleted} subcarpetas vacías · " +
+                $"{summary.FilesSkipped} conservados · {summary.Errors} errores.";
+            DeleteMediaSection.Visibility = Visibility.Collapsed;
+        }
+        catch (ArgumentException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        catch (DirectoryNotFoundException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        catch (IOException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        catch (SecurityException exception)
+        {
+            ShowMediaOperationError(exception.Message);
+        }
+        finally
+        {
+            _mediaOperationRunning = false;
+            SelectMediaSourceButton.IsEnabled = true;
+            MediaBackButton.IsEnabled = true;
+            UpdateMediaCopyControls();
+            UpdateMediaDeleteControls();
         }
     }
 
@@ -308,9 +452,13 @@ public partial class MainWindow : Window
     private void ResetMediaView()
     {
         _mediaScanResult = null;
+        _mediaCopySummary = null;
         MediaSourcePathTextBox.Clear();
         CopyImagesCheckBox.IsChecked = false;
         CopyVideosCheckBox.IsChecked = false;
+        DeleteImagesCheckBox.IsChecked = false;
+        DeleteVideosCheckBox.IsChecked = false;
+        DeleteMediaSection.Visibility = Visibility.Collapsed;
         ImageDestinationTextBox.Clear();
         VideoDestinationTextBox.Clear();
         MediaProgressBar.Value = 0;
@@ -322,6 +470,7 @@ public partial class MainWindow : Window
         SelectMediaSourceButton.IsEnabled = true;
         MediaBackButton.IsEnabled = true;
         UpdateMediaCopyControls();
+        UpdateMediaDeleteControls();
     }
 
     private async void Start_Click(object sender, RoutedEventArgs e)

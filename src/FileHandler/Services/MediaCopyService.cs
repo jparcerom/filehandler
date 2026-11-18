@@ -56,7 +56,7 @@ public sealed class MediaCopyService
             $"Escaneo finalizado: {images.Length} imágenes, {videos.Length} vídeos " +
             $"en {scan.SubdirectoryCount} subcarpetas."));
 
-        return new MediaScanResult(sourcePath, images, videos, scan.SubdirectoryCount, scan.Errors);
+        return new MediaScanResult(sourcePath, images, videos, scan.Directories, scan.Errors);
     }
 
     public MediaCopySummary Copy(
@@ -86,24 +86,44 @@ public sealed class MediaCopyService
         log.Write(
             $"Inicio de copia multimedia. Imágenes: {images.Count} | Vídeos: {videos.Count}");
 
-        if (normalizedImageDestination is not null)
+        try
         {
-            Directory.CreateDirectory(normalizedImageDestination);
+            if (normalizedImageDestination is not null)
+            {
+                Directory.CreateDirectory(normalizedImageDestination);
+            }
+            if (normalizedVideoDestination is not null)
+            {
+                Directory.CreateDirectory(normalizedVideoDestination);
+            }
         }
-        if (normalizedVideoDestination is not null)
+        catch (IOException exception)
         {
-            Directory.CreateDirectory(normalizedVideoDestination);
+            log.Write($"[ERROR] No se pudieron preparar los destinos: {exception.Message}");
+            throw;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            log.Write($"[ERROR] Sin permiso para preparar los destinos: {exception.Message}");
+            throw;
+        }
+        catch (SecurityException exception)
+        {
+            log.Write($"[ERROR] Acceso denegado al preparar los destinos: {exception.Message}");
+            throw;
         }
 
         var imagesCopied = 0;
         var videosCopied = 0;
         var errors = 0;
         var processed = 0;
+        var successfulCopies = new List<MediaCopyEntry>();
         foreach (var file in images)
         {
-            if (CopyFile(file, normalizedImageDestination!, log, out var message))
+            if (CopyFile(file, normalizedImageDestination!, log, out var destinationPath, out var message))
             {
                 imagesCopied++;
+                successfulCopies.Add(new MediaCopyEntry(file, destinationPath!, IsImage: true));
             }
             else
             {
@@ -115,9 +135,10 @@ public sealed class MediaCopyService
 
         foreach (var file in videos)
         {
-            if (CopyFile(file, normalizedVideoDestination!, log, out var message))
+            if (CopyFile(file, normalizedVideoDestination!, log, out var destinationPath, out var message))
             {
                 videosCopied++;
+                successfulCopies.Add(new MediaCopyEntry(file, destinationPath!, IsImage: false));
             }
             else
             {
@@ -133,7 +154,8 @@ public sealed class MediaCopyService
             imagesCopied,
             videosCopied,
             scan.Errors,
-            errors);
+            errors,
+            successfulCopies);
         log.Write(
             $"Fin de copia multimedia. Imágenes copiadas: {summary.ImagesCopied}/{summary.ImagesToCopy} | " +
             $"Vídeos copiados: {summary.VideosCopied}/{summary.VideosToCopy} | " +
@@ -167,30 +189,35 @@ public sealed class MediaCopyService
         string sourceFile,
         string destination,
         ActivityLog log,
+        out string? destinationPath,
         out string message)
     {
         try
         {
             var target = GetAvailableDestination(sourceFile, destination, log);
             File.Copy(sourceFile, target, overwrite: false);
+            destinationPath = target;
             message = $"[COPIADO] {sourceFile} -> {target}";
             log.Write(message);
             return true;
         }
         catch (IOException exception)
         {
+            destinationPath = null;
             message = $"[ERROR] No se pudo copiar {sourceFile}: {exception.Message}";
             log.Write(message);
             return false;
         }
         catch (UnauthorizedAccessException exception)
         {
+            destinationPath = null;
             message = $"[ERROR] Sin permiso para copiar {sourceFile}: {exception.Message}";
             log.Write(message);
             return false;
         }
         catch (SecurityException exception)
         {
+            destinationPath = null;
             message = $"[ERROR] Acceso denegado al copiar {sourceFile}: {exception.Message}";
             log.Write(message);
             return false;

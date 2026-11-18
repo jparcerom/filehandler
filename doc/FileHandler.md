@@ -52,7 +52,9 @@ La primera operación implementada es "Organizar por fecha": recorre la carpeta 
 
 La operación "Copiar multimedia" cuenta recursivamente imágenes y vídeos. Por defecto reconoce, sin distinguir mayúsculas, imágenes `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tif`, `.tiff`, `.webp`, `.heic`, `.heif` y `.raw`; y vídeos `.mp4`, `.mov`, `.mkv`, `.avi`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg` y `.3gp`.
 
-La copia compara mediante SHA-256 cuando ya existe un archivo con el mismo nombre. Tanto si el contenido coincide como si difiere, conserva el archivo existente y guarda el entrante con un sufijo incremental (`-1`, `-2`, etc.); nunca sobrescribe. La operación mantiene los archivos de origen. La eliminación opcional del origen se implementará después como un paso separado y confirmado.
+La copia compara mediante SHA-256 cuando ya existe un archivo con el mismo nombre. Tanto si el contenido coincide como si difiere, conserva el archivo existente y guarda el entrante con un sufijo incremental (`-1`, `-2`, etc.); nunca sobrescribe. La copia no elimina por sí sola los archivos de origen; la limpieza es un paso posterior y confirmado.
+
+La limpieza opcional del origen solo elimina archivos cuya copia terminó correctamente y cuyo hash SHA-256 sigue coincidiendo con el destino; los archivos fallidos o modificados se conservan. Las subcarpetas solo se intentan eliminar cuando están vacías y después de los archivos, de abajo arriba. Si el origen contiene ambos tipos multimedia, solo se intentan borrar subcarpetas al seleccionar ambos tipos; si contiene uno solo, al seleccionarlo.
 
 Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las operaciones restantes están detalladas en el [roadmap](./ROADMAP.md).
 
