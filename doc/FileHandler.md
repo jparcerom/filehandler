@@ -40,6 +40,7 @@ En este caso sí se moverán los archivos en vez de copiarlos, una vez movidos s
 
 ## Sacar archivos de subcarpetas
 Otra de las opciones es la de sacar todos los archivos de las subcarpetas de una carpeta origen a la raiz de una destino.
+Se recorrerán las subcarpetas de forma recursiva; los archivos que ya estén en la raíz del origen no se moverán. Si un archivo ya está en la raíz del destino se conservará allí. Ante cualquier colisión de nombres se mantendrán ambos archivos y el entrante recibirá un sufijo incremental, incluso si su contenido es idéntico. No se eliminarán las carpetas que queden vacías.
 
 # Procesos
 Cualquier proceso que se ejecute debe mostrar la salida y guardarlo en logs además de mostrar mientras se ejecuta una barra de progreso o un conteo de archivos procesados.
@@ -57,6 +58,8 @@ La copia compara mediante SHA-256 cuando ya existe un archivo con el mismo nombr
 La limpieza opcional del origen solo elimina archivos cuya copia terminó correctamente y cuyo hash SHA-256 sigue coincidiendo con el destino; los archivos fallidos o modificados se conservan. Las subcarpetas solo se intentan eliminar cuando están vacías y después de los archivos, de abajo arriba. Si el origen contiene ambos tipos multimedia, solo se intentan borrar subcarpetas al seleccionar ambos tipos; si contiene uno solo, al seleccionarlo.
 
 La operación de duplicados de Windows reconoce únicamente el sufijo " (n)" antes de la extensión. Compara los candidatos con el original sin número o, si este no existe, con el candidato de número más bajo. Solo mueve las coincidencias SHA-256 tras confirmación y una nueva verificación; conserva el archivo de referencia y los candidatos no coincidentes o no verificables. El destino debe estar fuera del origen, y las colisiones reciben un sufijo incremental sin sobrescribir.
+
+La extracción de archivos recorre recursivamente las subcarpetas y mueve su contenido a la raíz del destino; no modifica los archivos de la raíz del origen ni elimina las carpetas vacías. Si el destino está dentro del origen, los archivos que ya estén directamente en su raíz se dejan en su sitio. Los nombres en conflicto siempre se renombran con sufijos incrementales, sin comparar el contenido y sin sobrescribir.
 
 Los registros de actividad se guardan en `%LOCALAPPDATA%\FileHandler\logs\filehandler.log`. Las operaciones restantes están detalladas en el [roadmap](./ROADMAP.md).
 

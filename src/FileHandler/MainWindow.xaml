@@ -70,7 +70,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button IsEnabled="False"
+                    <Button Click="ExtractSubfolderFiles_Click"
                             HorizontalContentAlignment="Stretch"
                             Background="White"
                             BorderBrush="#D1D5DB"
@@ -79,7 +79,7 @@
                         <StackPanel>
                             <TextBlock Text="Sacar archivos de subcarpetas" FontSize="16" FontWeight="SemiBold" />
                             <TextBlock Text="Reunir los archivos en la raíz de una carpeta de destino." Margin="0,5,0,0" />
-                            <TextBlock Text="EN DESARROLLO" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" />
+                            <TextBlock Text="DISPONIBLE" Margin="0,7,0,0" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -334,6 +334,83 @@
                              FontFamily="Consolas"
                              FontSize="12" />
                     <TextBlock x:Name="DuplicatesLogPathTextBlock"
+                               Margin="0,5,0,0"
+                               Foreground="#6B7280"
+                               FontSize="12"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <StackPanel x:Name="SubfolderFilesView" Visibility="Collapsed">
+                    <Button x:Name="SubfolderBackButton"
+                            Content="← Todas las operaciones"
+                            HorizontalAlignment="Left"
+                            Click="BackFromSubfolderFiles_Click"
+                            Margin="0,0,0,14" />
+                    <TextBlock Text="Sacar archivos de subcarpetas"
+                               FontSize="21"
+                               FontWeight="SemiBold"
+                               Foreground="#111827" />
+                    <TextBlock Text="Mueve a la raíz del destino todos los archivos encontrados en subcarpetas. Los archivos que ya estén en la raíz del origen no se modifican. Si hay colisión, el entrante siempre recibe un sufijo incremental, aunque el contenido sea idéntico."
+                               Margin="0,6,0,12"
+                               TextWrapping="Wrap"
+                               Foreground="#4B5563"
+                               FontSize="14" />
+
+                    <TextBlock Text="Carpeta de origen" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,5,0,8">
+                        <Button x:Name="SelectSubfolderSourceButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectSubfolderSource_Click"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="SubfolderSourcePathTextBox" IsReadOnly="True" />
+                    </DockPanel>
+
+                    <ProgressBar x:Name="SubfolderProgressBar" Height="10" Margin="0,5,0,5" Minimum="0" Maximum="100" />
+                    <TextBlock x:Name="SubfolderStatusTextBlock"
+                               Text="Selecciona la carpeta de origen para buscar archivos en sus subcarpetas."
+                               Foreground="#374151"
+                               TextWrapping="Wrap" />
+                    <TextBlock x:Name="SubfolderCountsTextBlock"
+                               Margin="0,5,0,12"
+                               Foreground="#111827"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="Carpeta de destino" FontWeight="SemiBold" Foreground="#374151" />
+                    <DockPanel Margin="0,5,0,12">
+                        <Button x:Name="SelectSubfolderDestinationButton"
+                                DockPanel.Dock="Right"
+                                Content="Seleccionar..."
+                                Click="SelectSubfolderDestination_Click"
+                                IsEnabled="False"
+                                Margin="10,0,0,0" />
+                        <TextBox x:Name="SubfolderDestinationPathTextBox" IsReadOnly="True" />
+                    </DockPanel>
+
+                    <Button x:Name="MoveSubfolderFilesButton"
+                            Content="Mover archivos a la raíz del destino"
+                            HorizontalAlignment="Left"
+                            Background="#2563EB"
+                            Foreground="White"
+                            IsEnabled="False"
+                            Click="StartMoveSubfolderFiles_Click" />
+                    <TextBlock x:Name="SubfolderSummaryTextBlock"
+                               Margin="0,8,0,6"
+                               Foreground="#111827"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="Registro de actividad" FontWeight="SemiBold" Foreground="#374151" />
+                    <TextBox x:Name="SubfolderLogTextBox"
+                             Margin="0,5,0,0"
+                             Height="100"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             FontFamily="Consolas"
+                             FontSize="12" />
+                    <TextBlock x:Name="SubfolderLogPathTextBlock"
                                Margin="0,5,0,0"
                                Foreground="#6B7280"
                                FontSize="12"

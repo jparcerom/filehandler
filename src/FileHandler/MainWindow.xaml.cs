@@ -13,11 +13,14 @@ public partial class MainWindow : Window
     private readonly MediaCopyService _mediaCopyService = new();
     private readonly MediaCleanupService _mediaCleanupService = new();
     private readonly WindowsDuplicateService _windowsDuplicateService = new();
+    private readonly SubfolderFileService _subfolderFileService = new();
     private MediaScanResult? _mediaScanResult;
     private MediaCopySummary? _mediaCopySummary;
     private WindowsDuplicateScanResult? _windowsDuplicateScan;
+    private SubfolderFileScanResult? _subfolderFileScan;
     private bool _mediaOperationRunning;
     private bool _duplicatesOperationRunning;
+    private bool _subfolderOperationRunning;
 
     public MainWindow()
     {
@@ -25,6 +28,7 @@ public partial class MainWindow : Window
         LogPathTextBlock.Text = $"Los registros se guardan en: {_organizer.LogPath}";
         MediaLogPathTextBlock.Text = $"Los registros se guardan en: {_mediaCopyService.LogPath}";
         DuplicatesLogPathTextBlock.Text = $"Los registros se guardan en: {_windowsDuplicateService.LogPath}";
+        SubfolderLogPathTextBlock.Text = $"Los registros se guardan en: {_subfolderFileService.LogPath}";
     }
 
     private void OrganizeByDate_Click(object sender, RoutedEventArgs e)
@@ -278,6 +282,225 @@ public partial class MainWindow : Window
         SelectDuplicatesSourceButton.IsEnabled = true;
         DuplicatesBackButton.IsEnabled = true;
         UpdateDuplicatesControls();
+    }
+
+    private void ExtractSubfolderFiles_Click(object sender, RoutedEventArgs e)
+    {
+        HomeView.Visibility = Visibility.Collapsed;
+        SubfolderFilesView.Visibility = Visibility.Visible;
+        ResetSubfolderView();
+    }
+
+    private void BackFromSubfolderFiles_Click(object sender, RoutedEventArgs e)
+    {
+        if (_subfolderOperationRunning)
+        {
+            return;
+        }
+
+        HomeView.Visibility = Visibility.Visible;
+        SubfolderFilesView.Visibility = Visibility.Collapsed;
+    }
+
+    private async void SelectSubfolderSource_Click(object sender, RoutedEventArgs e)
+    {
+        var selectedPath = SelectFolder("Selecciona la carpeta de origen");
+        if (selectedPath is not null)
+        {
+            SubfolderSourcePathTextBox.Text = selectedPath;
+            SubfolderDestinationPathTextBox.Clear();
+            await ScanSubfolderSourceAsync(selectedPath);
+        }
+    }
+
+    private async Task ScanSubfolderSourceAsync(string source)
+    {
+        _subfolderFileScan = null;
+        SubfolderCountsTextBlock.Text = string.Empty;
+        SubfolderSummaryTextBlock.Text = string.Empty;
+        SubfolderLogTextBox.Clear();
+        SubfolderProgressBar.Value = 0;
+        SubfolderProgressBar.IsIndeterminate = true;
+        SubfolderStatusTextBlock.Text = "Escaneando archivos en subcarpetas...";
+        _subfolderOperationRunning = true;
+        SelectSubfolderSourceButton.IsEnabled = false;
+        SubfolderBackButton.IsEnabled = false;
+        UpdateSubfolderControls();
+
+        var progress = new Progress<OperationProgress>(UpdateSubfolderProgress);
+        try
+        {
+            var scan = await Task.Run(() => _subfolderFileService.Scan(source, progress));
+            _subfolderFileScan = scan;
+            SubfolderCountsTextBlock.Text = $"{scan.Files.Count} archivos encontrados en subcarpetas";
+            if (scan.ScanErrors > 0)
+            {
+                SubfolderCountsTextBlock.Text += $" · {scan.ScanErrors} errores de escaneo";
+            }
+
+            if (scan.Files.Count == 0)
+            {
+                SubfolderSummaryTextBlock.Text = "No hay archivos en subcarpetas para mover.";
+            }
+        }
+        catch (ArgumentException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (DirectoryNotFoundException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (IOException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (SecurityException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        finally
+        {
+            _subfolderOperationRunning = false;
+            SelectSubfolderSourceButton.IsEnabled = true;
+            SubfolderBackButton.IsEnabled = true;
+            UpdateSubfolderControls();
+        }
+    }
+
+    private void SelectSubfolderDestination_Click(object sender, RoutedEventArgs e)
+    {
+        var selectedPath = SelectFolder("Selecciona la carpeta de destino");
+        if (selectedPath is not null)
+        {
+            SubfolderDestinationPathTextBox.Text = selectedPath;
+            UpdateSubfolderControls();
+        }
+    }
+
+    private void UpdateSubfolderControls()
+    {
+        var hasScan = !_subfolderOperationRunning && _subfolderFileScan is not null;
+        SelectSubfolderDestinationButton.IsEnabled = hasScan;
+        MoveSubfolderFilesButton.IsEnabled = hasScan &&
+                                             _subfolderFileScan!.Files.Count > 0 &&
+                                             SubfolderDestinationPathTextBox.Text.Trim().Length > 0;
+    }
+
+    private async void StartMoveSubfolderFiles_Click(object sender, RoutedEventArgs e)
+    {
+        var scan = _subfolderFileScan;
+        var destination = SubfolderDestinationPathTextBox.Text.Trim();
+        if (scan is null || scan.Files.Count == 0 || destination.Length == 0)
+        {
+            return;
+        }
+
+        var confirmation = MessageBox.Show(
+            this,
+            $"Se intentarán mover {scan.Files.Count} archivos encontrados en subcarpetas a la raíz del destino. " +
+            $"Los archivos que ya estén en la raíz del origen o del destino se conservarán.{Environment.NewLine}{Environment.NewLine}" +
+            "Ante cualquier colisión se conservarán ambos archivos y el entrante recibirá un sufijo incremental, " +
+            "incluso si su contenido es idéntico. ¿Quieres continuar?",
+            "Confirmar extracción de archivos",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        _subfolderOperationRunning = true;
+        SubfolderProgressBar.Value = 0;
+        SubfolderProgressBar.IsIndeterminate = false;
+        SubfolderSummaryTextBlock.Text = string.Empty;
+        SubfolderBackButton.IsEnabled = false;
+        SelectSubfolderSourceButton.IsEnabled = false;
+        UpdateSubfolderControls();
+        var progress = new Progress<OperationProgress>(UpdateSubfolderProgress);
+        try
+        {
+            var summary = await Task.Run(() => _subfolderFileService.Move(scan, destination, progress));
+            SubfolderSummaryTextBlock.Text =
+                $"Encontrados: {summary.FilesFound} · Movidos: {summary.Moved} · " +
+                $"Renombrados por colisión: {summary.CollisionRenames} · Ya en destino: " +
+                $"{summary.AlreadyAtDestination} · Errores de escaneo/movimiento: " +
+                $"{summary.ScanErrors}/{summary.Errors}.";
+            _subfolderFileScan = null;
+        }
+        catch (ArgumentException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (DirectoryNotFoundException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (IOException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        catch (SecurityException exception)
+        {
+            ShowSubfolderOperationError(exception.Message);
+        }
+        finally
+        {
+            _subfolderOperationRunning = false;
+            SubfolderBackButton.IsEnabled = true;
+            SelectSubfolderSourceButton.IsEnabled = true;
+            UpdateSubfolderControls();
+        }
+    }
+
+    private void UpdateSubfolderProgress(OperationProgress update)
+    {
+        SubfolderProgressBar.IsIndeterminate = update.IsScanning;
+        if (!update.IsScanning)
+        {
+            SubfolderProgressBar.Value = update.Total == 0
+                ? 100
+                : update.Processed * 100.0 / update.Total;
+        }
+        SubfolderStatusTextBlock.Text = update.Message;
+        SubfolderLogTextBox.AppendText(update.Message + Environment.NewLine);
+        SubfolderLogTextBox.ScrollToEnd();
+    }
+
+    private void ShowSubfolderOperationError(string message)
+    {
+        SubfolderProgressBar.IsIndeterminate = false;
+        SubfolderStatusTextBlock.Text = $"La operación no pudo completarse: {message}";
+        SubfolderLogTextBox.AppendText($"[ERROR] {message}{Environment.NewLine}");
+        MessageBox.Show(this, message, "Error al extraer archivos", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+
+    private void ResetSubfolderView()
+    {
+        _subfolderFileScan = null;
+        SubfolderSourcePathTextBox.Clear();
+        SubfolderDestinationPathTextBox.Clear();
+        SubfolderCountsTextBlock.Text = string.Empty;
+        SubfolderSummaryTextBlock.Text = string.Empty;
+        SubfolderLogTextBox.Clear();
+        SubfolderProgressBar.Value = 0;
+        SubfolderProgressBar.IsIndeterminate = false;
+        SubfolderStatusTextBlock.Text = "Selecciona la carpeta de origen para buscar archivos en sus subcarpetas.";
+        SelectSubfolderSourceButton.IsEnabled = true;
+        SubfolderBackButton.IsEnabled = true;
+        UpdateSubfolderControls();
     }
 
     private void SelectSource_Click(object sender, RoutedEventArgs e)

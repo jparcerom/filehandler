@@ -43,10 +43,13 @@ Verificación: compilación Release y 11 pruebas superadas.
 
 Verificación: compilación Release y 15 pruebas superadas.
 
-### 5. Extracción de archivos de subcarpetas
-- Mover archivos de subcarpetas a la raíz del destino.
-- Antes de implementar, fijar el comportamiento ante nombres iguales con contenido igual o distinto.
-- Informar de movimientos, omisiones y errores; no modificar archivos sin una política de colisión definida.
+### 5. Extracción de archivos de subcarpetas — completado
+- Escanea recursivamente y mueve a la raíz del destino solo los archivos que provienen de subcarpetas; los que están en la raíz del origen no se alteran.
+- Si un archivo ya está directamente en la raíz del destino, lo conserva allí; no elimina carpetas que queden vacías.
+- Ante cualquier colisión, conserva el archivo existente y renombra el entrante con un sufijo incremental, tanto si el contenido coincide como si difiere.
+- Incluye selección de origen/destino, confirmación, progreso, actividad y resumen de movimientos, colisiones y errores.
+
+Verificación: compilación Release y 19 pruebas superadas.
 
 ### 6. Validación y distribución
 - Ejecutar la batería completa de pruebas y una revisión manual de los flujos en Windows.
