@@ -37,10 +37,11 @@ Verificación: compilación Release y 11 pruebas superadas.
 ### 4. Búsqueda y revisión de duplicados multimedia — completado
 - Escanea imágenes y vídeos reconocidos y encuentra contenido idéntico por tamaño y SHA-256, aunque los nombres sean distintos.
 - Muestra grupos revisables con rutas, tipo y miniaturas de imágenes o vídeos cuando Windows las proporciona.
-- Permite elegir manualmente copias para enviarlas a la Papelera tras confirmación; conserva al menos una copia por grupo y vuelve a verificar antes de procesar.
+- Presenta todos los archivos en una tabla única, ordenados consecutivamente por grupo y con el resumen del grupo en cada fila; marca automáticamente para la Papelera todas las copias salvo la primera ruta y permite desmarcar archivos que se quieran conservar.
+- Requiere confirmación; conserva al menos una copia por grupo y vuelve a verificar antes de procesar.
 - Registra errores y cambios detectados desde el escaneo, y requiere volver a buscar para refrescar los resultados.
 
-Verificación: compilación Release y 26 pruebas superadas; revisión manual con datos de prueba (3 imágenes, 2 vídeos, 2 grupos idénticos y 1 aviso por nombre).
+Verificación: compilación Release y 26 pruebas superadas; revisión manual con datos de prueba (3 imágenes, 2 vídeos, 2 grupos idénticos y 1 archivo no multimedia ignorado).
 
 ### 5. Extracción de archivos de subcarpetas — completado
 - Escanea recursivamente y mueve a la raíz del destino solo los archivos que provienen de subcarpetas; los que están en la raíz del origen no se alteran.

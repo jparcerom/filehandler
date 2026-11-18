@@ -21,7 +21,7 @@
                        FontSize="24"
                        FontWeight="SemiBold"
                        Foreground="#111827" />
-            <TextBlock Text="Se comparan imágenes y vídeos por tamaño y SHA-256 para detectar contenido idéntico, aunque los nombres sean distintos."
+            <TextBlock Text="Se comparan imágenes y vídeos por tamaño y SHA-256. Las copias repetidas se marcan automáticamente, dejando una copia sin marcar por grupo."
                        Margin="0,6,0,0"
                        TextWrapping="Wrap"
                        Foreground="#4B5563" />
@@ -64,102 +64,90 @@
             </DockPanel>
         </StackPanel>
 
-        <Grid Grid.Row="3">
-            <Grid Margin="10">
-                <TextBlock x:Name="DuplicateEmptyTextBlock"
-                           Text="Todavía no hay resultados. Selecciona una carpeta para iniciar la búsqueda."
-                           Foreground="#6B7280"
-                           TextWrapping="Wrap"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
-                <Grid x:Name="DuplicateResultsGrid" Visibility="Collapsed">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="300" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <ListBox x:Name="DuplicateGroupsListBox"
-                             SelectionChanged="DuplicateGroups_SelectionChanged"
-                             BorderBrush="#E5E7EB"
-                             BorderThickness="1">
-                        <ListBox.ItemTemplate>
+        <Grid Grid.Row="3" Margin="10">
+            <TextBlock x:Name="DuplicateEmptyTextBlock"
+                       Text="Todavía no hay resultados. Selecciona una carpeta para iniciar la búsqueda."
+                       Foreground="#6B7280"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center" />
+            <DataGrid x:Name="DuplicateFilesGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="False"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      LoadingRow="DuplicateFilesGrid_LoadingRow"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      Visibility="Collapsed">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Enviar a papelera" Width="115">
+                        <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="4">
-                                    <TextBlock Text="{Binding DisplayText}"
-                                               FontWeight="SemiBold"
-                                               Foreground="#111827" />
-                                    <TextBlock Text="{Binding HashPreview}"
-                                               Margin="0,4,0,0"
-                                               FontSize="11"
-                                               Foreground="#6B7280" />
-                                </StackPanel>
+                                <CheckBox IsChecked="{Binding IsSelectedForDeletion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-
-                    <DataGrid x:Name="DuplicateFilesGrid"
-                              Grid.Column="1"
-                              Margin="10,0,0,0"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              CanUserDeleteRows="False"
-                              IsReadOnly="False"
-                              SelectionMode="Single"
-                              SelectionUnit="FullRow"
-                              HeadersVisibility="Column"
-                              GridLinesVisibility="Horizontal">
-                        <DataGrid.Columns>
-                            <DataGridTemplateColumn Header="Enviar a papelera" Width="115">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <CheckBox IsChecked="{Binding IsSelectedForDeletion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Vista previa" Width="90" IsReadOnly="True">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Width="68"
-                                                Height="48"
-                                                Background="#F3F4F6"
-                                                CornerRadius="4">
-                                            <Grid>
-                                                <TextBlock Text="{Binding TypeIcon}"
-                                                           FontSize="11"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#6B7280"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center" />
-                                                <Image Source="{Binding Thumbnail}"
-                                                       Stretch="UniformToFill" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Archivo" Width="*">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Path}"
-                                                   ToolTip="{Binding Path}"
-                                                   TextWrapping="Wrap"
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Grupo idéntico" Width="240" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GroupHeaderText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="#374151"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center"
+                                           Margin="4,2" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Vista previa" Width="90" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Width="68"
+                                        Height="48"
+                                        Background="#F3F4F6"
+                                        CornerRadius="4">
+                                    <Grid>
+                                        <TextBlock Text="{Binding TypeIcon}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#6B7280"
+                                                   HorizontalAlignment="Center"
                                                    VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Tamaño"
-                                                Binding="{Binding SizeText}"
-                                                Width="95"
-                                                IsReadOnly="True" />
-                            <DataGridTextColumn Header="Tipo"
-                                                Binding="{Binding TypeText}"
-                                                Width="75"
-                                                IsReadOnly="True" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </Grid>
+                                        <Image Source="{Binding Thumbnail}"
+                                               Stretch="UniformToFill" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Archivo" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path}"
+                                           ToolTip="{Binding Path}"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Tamaño"
+                                        Binding="{Binding SizeText}"
+                                        Width="95"
+                                        IsReadOnly="True" />
+                    <DataGridTextColumn Header="Tipo"
+                                        Binding="{Binding TypeText}"
+                                        Width="75"
+                                        IsReadOnly="True" />
+                </DataGrid.Columns>
+            </DataGrid>
         </Grid>
 
         <StackPanel Grid.Row="4" Margin="0,12,0,0">

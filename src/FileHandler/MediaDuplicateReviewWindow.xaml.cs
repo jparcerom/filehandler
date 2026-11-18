@@ -18,13 +18,14 @@ public partial class MediaDuplicateReviewWindow : Window
 {
     private readonly MediaDuplicateService _service = new();
     private readonly ObservableCollection<DuplicateGroupRow> _groups = new();
+    private readonly ObservableCollection<DuplicateFileRow> _files = new();
     private MediaDuplicateScanResult? _scan;
     private bool _isBusy;
 
     public MediaDuplicateReviewWindow()
     {
         InitializeComponent();
-        DuplicateGroupsListBox.ItemsSource = _groups;
+        DuplicateFilesGrid.ItemsSource = _files;
         LogPathTextBlock.Text = $"Los registros se guardan en: {_service.LogPath}";
     }
 
@@ -74,17 +75,20 @@ public partial class MediaDuplicateReviewWindow : Window
             foreach (var group in scan.DuplicateGroups)
             {
                 var groupRow = new DuplicateGroupRow(group);
-                foreach (var file in group.Files)
+                _groups.Add(groupRow);
+                for (var index = 0; index < group.Files.Count; index++)
                 {
-                    var fileRow = new DuplicateFileRow(file);
+                    var fileRow = new DuplicateFileRow(
+                        group.Files[index],
+                        groupRow.GroupHeaderText,
+                        index > 0);
                     fileRow.PropertyChanged += DuplicateFile_PropertyChanged;
                     groupRow.Files.Add(fileRow);
+                    _files.Add(fileRow);
                 }
-
-                _groups.Add(groupRow);
             }
 
-            DuplicateResultsGrid.Visibility = _groups.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            DuplicateFilesGrid.Visibility = _files.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             DuplicateEmptyTextBlock.Visibility = _groups.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             CountsTextBlock.Text =
@@ -96,16 +100,14 @@ public partial class MediaDuplicateReviewWindow : Window
                     $" · {scan.ScanErrors} errores de escaneo · {scan.VerificationErrors} errores de comparación";
             }
 
+            var selectedCount = _files.Count(file => file.IsSelectedForDeletion);
             SummaryTextBlock.Text = scan.DuplicateGroups.Count == 0
                 ? "No se encontraron archivos multimedia con contenido idéntico."
-                : "Revisa cada grupo y marca los archivos que quieres enviar a la Papelera. " +
-                  "Se conservará al menos una copia de cada grupo.";
+                : $"Se han marcado automáticamente {selectedCount} copias para la Papelera. " +
+                  "Revisa la lista y desmarca las que quieras conservar. Se deja una copia sin marcar por grupo.";
             StatusTextBlock.Text = "Búsqueda completada.";
 
-            if (_groups.Count > 0)
-            {
-                DuplicateGroupsListBox.SelectedIndex = 0;
-            }
+            UpdateControls();
         }
         catch (ArgumentException exception)
         {
@@ -136,37 +138,14 @@ public partial class MediaDuplicateReviewWindow : Window
         }
     }
 
-    private async void DuplicateGroups_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void DuplicateFilesGrid_LoadingRow(object sender, DataGridRowEventArgs e)
     {
-        if (DuplicateGroupsListBox.SelectedItem is not DuplicateGroupRow selectedGroup)
-        {
-            DuplicateFilesGrid.ItemsSource = null;
-            UpdateControls();
-            return;
-        }
-
-        DuplicateFilesGrid.ItemsSource = selectedGroup.Files;
-        UpdateControls();
-
-        var rowsWithoutThumbnails = selectedGroup.Files
-            .Where(file => file.Thumbnail is null)
-            .ToArray();
-        if (rowsWithoutThumbnails.Length == 0)
+        if (e.Row.Item is not DuplicateFileRow file || !file.TryBeginThumbnailLoad())
         {
             return;
         }
 
-        var thumbnails = await Task.WhenAll(rowsWithoutThumbnails.Select(file =>
-            Task.Run(() => MediaThumbnailProvider.Load(file.File.Path, file.File.IsImage))));
-        if (!ReferenceEquals(DuplicateGroupsListBox.SelectedItem, selectedGroup))
-        {
-            return;
-        }
-
-        for (var index = 0; index < rowsWithoutThumbnails.Length; index++)
-        {
-            rowsWithoutThumbnails[index].Thumbnail = thumbnails[index];
-        }
+        file.Thumbnail = await Task.Run(() => MediaThumbnailProvider.Load(file.File.Path, file.File.IsImage));
     }
 
     private async void DeleteSelected_Click(object sender, RoutedEventArgs e)
@@ -269,9 +248,9 @@ public partial class MediaDuplicateReviewWindow : Window
         DeleteSelectedButton.IsEnabled =
             !_isBusy && _scan is not null && selectedCount > 0 && !invalidGroup;
         SelectionWarningTextBlock.Text = invalidGroup
-            ? "Desmarca al menos una copia de cada grupo para conservarla."
+            ? "Deja al menos una copia sin marcar en cada grupo."
             : selectedCount > 0
-                ? "Se conservará al menos una copia de cada grupo."
+                ? $"Hay {selectedCount} copias marcadas; queda al menos una sin marcar por grupo."
                 : string.Empty;
 
         SelectSourceButton.IsEnabled = !_isBusy;
@@ -313,8 +292,8 @@ public partial class MediaDuplicateReviewWindow : Window
         }
 
         _groups.Clear();
-        DuplicateFilesGrid.ItemsSource = null;
-        DuplicateResultsGrid.Visibility = Visibility.Collapsed;
+        _files.Clear();
+        DuplicateFilesGrid.Visibility = Visibility.Collapsed;
         DuplicateEmptyTextBlock.Visibility = Visibility.Visible;
         UpdateControls();
     }
@@ -347,31 +326,51 @@ public partial class MediaDuplicateReviewWindow : Window
             var repeatedBytes = (decimal)group.Size * (group.Files.Count - 1);
             DisplayText = $"{group.Files.Count} archivos idénticos · {FormatSize((long)Math.Min(repeatedBytes, long.MaxValue))} repetidos";
             HashPreview = $"SHA-256 {group.Sha256[..12]}...";
+            GroupHeaderText = $"{DisplayText} · {HashPreview}";
         }
 
         public MediaDuplicateGroup Group { get; }
         public ObservableCollection<DuplicateFileRow> Files { get; }
         public string DisplayText { get; }
         public string HashPreview { get; }
+        public string GroupHeaderText { get; }
     }
 
     private sealed class DuplicateFileRow : INotifyPropertyChanged
     {
+        private bool _thumbnailLoadStarted;
         private bool _isSelectedForDeletion;
         private ImageSource? _thumbnail;
 
-        public DuplicateFileRow(MediaDuplicateFile file)
+        public DuplicateFileRow(
+            MediaDuplicateFile file,
+            string groupHeaderText,
+            bool isSelectedForDeletion)
         {
             File = file;
+            GroupHeaderText = groupHeaderText;
+            _isSelectedForDeletion = isSelectedForDeletion;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public MediaDuplicateFile File { get; }
+        public string GroupHeaderText { get; }
         public string Path => File.Path;
         public string SizeText => FormatSize(File.Size);
         public string TypeText => File.IsImage ? "Imagen" : "Vídeo";
         public string TypeIcon => File.IsImage ? "FOTO" : "VÍDEO";
+
+        public bool TryBeginThumbnailLoad()
+        {
+            if (_thumbnailLoadStarted)
+            {
+                return false;
+            }
+
+            _thumbnailLoadStarted = true;
+            return true;
+        }
 
         public bool IsSelectedForDeletion
         {
