@@ -1,5 +1,5 @@
 # FileHandler v2.0.0
-La aplicación original desarrollada en python se permitía seleccionar un origen y un destino para las siguientes acciones:
+La aplicación original desarrollada en python, ubicada en la carpeta /doc/versiones, se permitía seleccionar un origen y un destino para las siguientes acciones:
 
 ### Mejoras
 En vez de seleccionar la carpeta de origen y de destino antes de seleccionar la acción a realizar dentro de las opciones, hacerlo dentro de cada opción.
@@ -37,3 +37,12 @@ Con está opción buscaremos en la carpeta origen y todas sus subcarpetas estos 
 Todos estos duplicados se moverán a la carpeta que se seleccione como destino.
 
 En este caso sí se moverán los archivos en vez de copiarlos, una vez movidos se revisarán manualmente para verificar que efectivamente siguen este formato en la carpeta destino.
+
+## Sacar archivos de subcarpetas
+Otra de las opciones es la de sacar todos los archivos de las subcarpetas de una carpeta origen a la raiz de una destino.
+
+# Procesos
+Cualquier proceso que se ejecute debe mostrar la salida y guardarlo en logs además de mostrar mientras se ejecuta una barra de progreso o un conteo de archivos procesados.
+
+# Desarrollo
+Se usará el lenguage más adecuado para el desarrollo de la aplicación para windows.
